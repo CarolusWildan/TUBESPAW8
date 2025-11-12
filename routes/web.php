@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserViewController;
+use App\Http\Controllers\FilmViewController;
 
 Route::get('/', function () {
-    return view('dashboard');
+    return view('welcome');
 });
 
-Route::get('/user', [UserViewController::class, 'index']);
+Route::resource('users', UserViewController::class);
+Route::resource('films', FilmViewController::class);
