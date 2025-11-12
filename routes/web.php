@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserViewController;
+
 use App\Http\Controllers\FilmViewController;
+use App\Http\Controllers\UserViewController;
 
 Route::get('/', function () {
     return view('welcome');
