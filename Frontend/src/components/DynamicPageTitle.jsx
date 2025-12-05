@@ -12,6 +12,8 @@ const DynamicPageTitle = () => {
                 return "LoginPage";
             case "/dashboard":
                 return "DashboardPage";
+            case "/movies":
+                return "FilmPage";
             default:
                 return "DefaultPage";
         }

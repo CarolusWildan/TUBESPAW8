@@ -1,12 +1,15 @@
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 const TopNavbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
+
+    
 
     // Cek status autentikasi dari localStorage
     useEffect(() => {
@@ -73,7 +76,6 @@ const TopNavbar = () => {
                 WebkitBackdropFilter: "blur(5px)",
                 
                 // Border bawah dibuat sangat tipis/hilang agar gradasi halus tidak terpotong garis tegas
-                // borderBottom: "1px solid rgba(255, 255, 255, 0.02)", 
                 zIndex: 1000
             }}
         >
