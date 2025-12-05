@@ -131,26 +131,31 @@ const HomePage = () => {
             <Container className="mt-5">
 
                 {/* === SECTION: LAGI TAYANG === */}
-                <Row className="mb-3">
-                    <Col><h3 className="fw-bold">Lagi Tayang</h3></Col>
+                <Row className="mb-3 align-items-center">
+                    {/* Tambahkan text-white agar judul terlihat di background gelap */}
+                    <Col><h3 className="fw-bold text-white">Lagi Tayang</h3></Col>
                     <Col className="text-end">
-                        <button className="btn btn-outline-dark btn-sm">Lihat semua →</button>
+                        {/* Ubah btn-outline-dark menjadi btn-outline-light */}
+                        <button className="btn btn-outline-light btn-sm rounded-pill px-4">Lihat semua →</button>
                     </Col>
                 </Row>
 
                 {/* POSTER HORIZONTAL */}
-                <div className="d-flex overflow-auto" style={{ gap: "20px" }}>
+                <div className="d-flex overflow-auto pb-3" style={{ gap: "20px" }}>
                     {nowShowing.map((film, index) => (
                         <div
                             key={index}
+                            className="film-card"
                             style={{
                                 minWidth: "200px",
                                 maxWidth: "200px",
-                                background: "white",
+                                // Ubah background white menjadi transparan
+                                background: "transparent", 
                                 borderRadius: "12px",
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                 overflow: "hidden",
-                                position: "relative"
+                                position: "relative",
+                                // Hapus shadow gelap, ganti transisi border/scale via CSS class
+                                transition: "transform 0.3s ease"
                             }}
                         >
                             {film.label && (
@@ -164,19 +169,34 @@ const HomePage = () => {
                                         fontSize: "12px",
                                         color: "white",
                                         borderBottomRightRadius: "10px",
+                                        zIndex: 2
                                     }}
                                 >
                                     {film.label}
                                 </span>
                             )}
 
-                            <img
-                                src={film.img}
-                                alt={film.title}
-                                style={{ width: "100%", height: "230px", objectFit: "cover" }}
-                            />
+                            <div style={{ borderRadius: "12px", overflow: "hidden", position: "relative" }}>
+                                <img
+                                    src={film.img}
+                                    alt={film.title}
+                                    style={{ width: "100%", height: "280px", objectFit: "cover" }}
+                                />
+                                {/* Overlay gradient agar teks putih di bawah gambar lebih terbaca (opsional, estetik) */}
+                                <div style={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: 0,
+                                    width: "100%",
+                                    height: "50%",
+                                    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)"
+                                }}></div>
+                            </div>
 
-                            <p className="text-center fw-semibold mt-2 p-2">{film.title}</p>
+                            {/* Tambahkan text-white disini */}
+                            <p className="text-center fw-semibold mt-2 p-1 text-white" style={{ fontSize: "0.95rem" }}>
+                                {film.title}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -185,32 +205,38 @@ const HomePage = () => {
                 <div className="my-5"></div>
 
                 {/* === SECTION: SEGERA TAYANG === */}
-                <Row className="mb-3">
-                    <Col><h3 className="fw-bold">Segera Tayang</h3></Col>
+                <Row className="mb-3 align-items-center">
+                    <Col><h3 className="fw-bold text-white">Segera Tayang</h3></Col>
                     <Col className="text-end">
-                        <button className="btn btn-outline-dark btn-sm">Lihat semua →</button>
+                        {/* Ubah btn-outline-dark menjadi btn-outline-light */}
+                        <button className="btn btn-outline-light btn-sm rounded-pill px-4">Lihat semua →</button>
                     </Col>
                 </Row>
 
-                <div className="d-flex overflow-auto" style={{ gap: "20px" }}>
+                <div className="d-flex overflow-auto pb-3" style={{ gap: "20px" }}>
                     {comingSoon.map((film, index) => (
                         <div
                             key={index}
+                            className="film-card"
                             style={{
                                 minWidth: "200px",
                                 maxWidth: "200px",
-                                background: "white",
+                                background: "transparent", // Transparan
                                 borderRadius: "12px",
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                 overflow: "hidden",
                             }}
                         >
-                            <img
-                                src={film.img}
-                                alt={film.title}
-                                style={{ width: "100%", height: "230px", objectFit: "cover" }}
-                            />
-                            <p className="text-center fw-semibold mt-2 p-2">{film.title}</p>
+                            <div style={{ borderRadius: "12px", overflow: "hidden" }}>
+                                <img
+                                    src={film.img}
+                                    alt={film.title}
+                                    style={{ width: "100%", height: "280px", objectFit: "cover" }}
+                                />
+                            </div>
+                            {/* Tambahkan text-white */}
+                            <p className="text-center fw-semibold mt-2 p-1 text-white" style={{ fontSize: "0.95rem" }}>
+                                {film.title}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -219,7 +245,8 @@ const HomePage = () => {
                 <div className="my-5 py-4">
                     <Row className="mb-4">
                         <Col>
-                            <h2 className="text-center fw-bold" style={{ color: "#2c3e50" }}>
+                            {/* Ubah warna judul studio menjadi putih */}
+                            <h2 className="text-center fw-bold text-white">
                                 Cari tau studio, yuk!
                             </h2>
                         </Col>
@@ -227,119 +254,62 @@ const HomePage = () => {
 
                     {/* Studio Cards */}
                     <Row className="mb-4">
-                        <Col md={4} className="mb-3">
-                            <Card 
-                                className={`h-100 studio-card ${activeStudio === "studio1" ? "active-studio" : ""}`}
-                                onClick={() => setActiveStudio("studio1")}
-                                style={{ 
-                                    cursor: "pointer", 
-                                    transition: "all 0.3s ease",
-                                    border: activeStudio === "studio1" ? "3px solid #6b7280" : "1px solid #dee2e6"
-                                }}
-                            >
-                                <Card.Img 
-                                    variant="top" 
-                                    src={imgStudio1} 
-                                    style={{ height: "180px", objectFit: "cover" }}
-                                />
-                                <Card.Body className="text-center d-flex flex-column">
-                                    <Card.Title style={{ color: "#6b7280", fontWeight: "bold" }}>
-                                        Studio 1
-                                    </Card.Title>
-                                    <Card.Text className="flex-grow-1">
-                                        Nikmati fontonen dengan kursi yang nyaman dan harga terjangkau.
-                                    </Card.Text>
-                                    <div className="mb-3">
-                                        <hr style={{ margin: "10px 0" }} />
-                                    </div>
-                                    <Button 
-                                        variant="outline-primary" 
-                                        size="sm"
-                                        style={{ borderColor: "#6b7280", color: "#6b7280" }}
+                        {/* Saya juga sedikit menyesuaikan kartu Studio agar tidak gelap total.
+                           Menggunakan bg-dark text-white atau transparan dengan border.
+                        */}
+                        {Object.keys(studiosData).map((key) => {
+                            const studio = studiosData[key];
+                            const isActive = activeStudio === key;
+                            return (
+                                <Col md={4} className="mb-3" key={key}>
+                                    <Card 
+                                        className={`h-100 border-0 ${isActive ? "active-studio" : ""}`}
+                                        onClick={() => setActiveStudio(key)}
+                                        style={{ 
+                                            cursor: "pointer", 
+                                            transition: "all 0.3s ease",
+                                            // Glass effect untuk kartu
+                                            background: isActive ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
+                                            backdropFilter: "blur(10px)",
+                                            border: isActive ? "1px solid #a78bfa" : "1px solid rgba(255,255,255,0.1)"
+                                        }}
                                     >
-                                        Baca lebih lanjut
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                        <Col md={4} className="mb-3">
-                            <Card 
-                                className={`h-100 studio-card ${activeStudio === "studio2" ? "active-studio" : ""}`}
-                                onClick={() => setActiveStudio("studio2")}
-                                style={{ 
-                                    cursor: "pointer", 
-                                    transition: "all 0.3s ease",
-                                    border: activeStudio === "studio2" ? "3px solid #6b7280" : "1px solid #dee2e6"
-                                }}
-                            >
-                                <Card.Img 
-                                    variant="top" 
-                                    src={imgStudio2} 
-                                    style={{ height: "180px", objectFit: "cover" }}
-                                />
-                                <Card.Body className="text-center d-flex flex-column">
-                                    <Card.Title style={{ color: "#6b7280", fontWeight: "bold" }}>
-                                        Studio 2
-                                    </Card.Title>
-                                    <Card.Text className="flex-grow-1">
-                                        Rasakan kemewahan kursi premium serta makanan ala restoran dengan servis terbaik.
-                                    </Card.Text>
-                                    <div className="mb-3">
-                                        <hr style={{ margin: "10px 0" }} />
-                                    </div>
-                                    <Button 
-                                        variant="outline-primary" 
-                                        size="sm"
-                                        style={{ borderColor: "#6b7280", color: "#6b7280" }}
-                                    >
-                                        Baca lebih lanjut
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                        <Col md={4} className="mb-3">
-                            <Card 
-                                className={`h-100 studio-card ${activeStudio === "studio3" ? "active-studio" : ""}`}
-                                onClick={() => setActiveStudio("studio3")}
-                                style={{ 
-                                    cursor: "pointer", 
-                                    transition: "all 0.3s ease",
-                                    border: activeStudio === "studio3" ? "3px solid #6b7280" : "1px solid #dee2e6"
-                                }}
-                            >
-                                <Card.Img 
-                                    variant="top" 
-                                    src={imgStudio3} 
-                                    style={{ height: "180px", objectFit: "cover" }}
-                                />
-                                <Card.Body className="text-center d-flex flex-column">
-                                    <Card.Title style={{ color: "#6b7280", fontWeight: "bold" }}>
-                                        Studio 3
-                                    </Card.Title>
-                                    <Card.Text className="flex-grow-1">
-                                        Rasakan bedanya nonton film high-definition dengan sistem proyeksi laser 4K.
-                                    </Card.Text>
-                                    <div className="mb-3">
-                                        <hr style={{ margin: "10px 0" }} />
-                                    </div>
-                                    <Button 
-                                        variant="outline-primary" 
-                                        size="sm"
-                                        style={{ borderColor: "#6b7280", color: "#6b7280" }}
-                                    >
-                                        Baca lebih lanjut
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
+                                        <Card.Img 
+                                            variant="top" 
+                                            src={studio.image} 
+                                            style={{ height: "180px", objectFit: "cover" }}
+                                        />
+                                        <Card.Body className="text-center d-flex flex-column">
+                                            <Card.Title className="fw-bold text-white">
+                                                {studio.title}
+                                            </Card.Title>
+                                            <Card.Text className="flex-grow-1 text-light opacity-75">
+                                                {studio.description}
+                                            </Card.Text>
+                                            <div className="mb-3">
+                                                <hr className="border-secondary" style={{ margin: "10px 0" }} />
+                                            </div>
+                                            <Button 
+                                                variant={isActive ? "primary" : "outline-light"}
+                                                size="sm"
+                                                className="rounded-pill"
+                                            >
+                                                Baca lebih lanjut
+                                            </Button>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            );
+                        })}
                     </Row>
 
                     {/* Selected Studio Details */}
                     <Row className="mb-4">
                         <Col>
-                            <Card className="bg-light border-0">
+                            <Card className="border-0" style={{ 
+                                background: "rgba(0,0,0,0.3)", // Latar belakang semi-transparan gelap
+                                borderRadius: "16px"
+                            }}>
                                 <Card.Body className="p-4">
                                     <Row className="align-items-center">
                                         <Col md={4}>
@@ -355,13 +325,13 @@ const HomePage = () => {
                                             />
                                         </Col>
                                         <Col md={8}>
-                                            <h4 className="fw-bold mb-3" style={{ color: "#2c3e50" }}>
+                                            <h4 className="fw-bold mb-3 text-white">
                                                 {currentStudio.title}
                                             </h4>
-                                            <p className="mb-3" style={{ fontSize: "1.1rem" }}>
+                                            <p className="mb-3 text-white opacity-90" style={{ fontSize: "1.1rem" }}>
                                                 {currentStudio.description}
                                             </p>
-                                            <ul className="list-unstyled">
+                                            <ul className="list-unstyled text-white">
                                                 {currentStudio.features.map((feature, index) => (
                                                     <li key={index} className="mb-2">
                                                         <span className="me-2">✅</span>
@@ -383,12 +353,23 @@ const HomePage = () => {
 
             {/* Custom CSS */}
             <style jsx>{`
-                .studio-card:hover {
+                .film-card:hover {
                     transform: translateY(-5px);
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
                 }
-                .active-studio {
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                /* Scrollbar styling agar tidak merusak tema */
+                .overflow-auto::-webkit-scrollbar {
+                    height: 8px;
+                }
+                .overflow-auto::-webkit-scrollbar-track {
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 4px;
+                }
+                .overflow-auto::-webkit-scrollbar-thumb {
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 4px;
+                }
+                .overflow-auto::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255,255,255,0.4);
                 }
             `}</style>
         </>

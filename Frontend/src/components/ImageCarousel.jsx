@@ -12,7 +12,7 @@ const ImageCarousel = ({ images }) => {
                             display: "flex", 
                             justifyContent: "center", 
                             alignItems: "center",
-                            backgroundColor: "#f8f9fa",
+                            backgroundColor: "transparent",
                             borderRadius: "16px"
                         }}>
                             <img

@@ -20,48 +20,85 @@ const TopNavbar = () => {
         if (userData) {
             setUser(JSON.parse(userData));
         }
-    }, [location]); // Update ketika lokasi/rute berubah
+    }, [location]); 
 
     // Fungsi untuk handle logout
     const handleLogout = () => {
-        // Hapus semua data autentikasi dari localStorage
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user");
         localStorage.removeItem("login_time");
         
-        // Update state
         setIsAuthenticated(false);
         setUser(null);
-        
-        // Redirect ke halaman home
         navigate("/");
     };
 
-    // Fungsi untuk mendapatkan nama user
-    const getUserName = () => {
-        if (!user) return "User";
-        return user.nama || user.name || user.username || user.email || "User";
+    // Style umum untuk tombol transparan (Ghost Button)
+    const ghostButtonStyle = {
+        background: "rgba(255, 255, 255, 0.05)",
+        border: "1px solid rgba(255, 255, 255, 0.3)",
+        color: "white",
+        fontWeight: "500",
+        borderRadius: "50px", // Lebih modern dengan rounded pill
+        padding: "8px 24px",
+        transition: "all 0.3s ease"
+    };
+
+    // Style untuk tombol utama (Gradient)
+    const primaryGradientStyle = {
+        background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
+        border: "none",
+        color: "white",
+        fontWeight: "600",
+        borderRadius: "50px",
+        padding: "8px 24px",
+        boxShadow: "0 4px 15px rgba(37, 117, 252, 0.4)", // Glow effect biru
+        transition: "all 0.3s ease"
     };
 
     return (
-        <Navbar expand="lg" className="bg-white shadow-sm" style={{ padding: "12px 0" }}>
-            <Container>
+        <Navbar 
+            expand="lg" 
+            variant="dark" // PENTING: Agar hamburger icon jadi putih
+            sticky="top" 
+            style={{ 
+                padding: "15px 0",
+                // MODIFIKASI GRADASI:
+                // Atas: Hitam pekat (opacity 0.9) agar logo jelas
+                // Bawah: Hampir transparan (opacity 0.0) agar menyatu dengan konten di bawahnya
+                background: "linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.0) 100%)",
+                
+                // Backdrop filter tetap ada untuk efek blur kaca
+                backdropFilter: "blur(5px)",      
+                WebkitBackdropFilter: "blur(5px)",
+                
+                // Border bawah dibuat sangat tipis/hilang agar gradasi halus tidak terpotong garis tegas
+                // borderBottom: "1px solid rgba(255, 255, 255, 0.02)", 
+                zIndex: 1000
+            }}
+        >
+            {/* PERUBAHAN DI SINI:
+               - Menggunakan 'fluid' agar lebar container 100% dari lebar layar.
+               - Menambahkan 'px-4' (padding horizontal level 4) untuk jarak di layar kecil.
+               - Menambahkan 'px-lg-5' (padding horizontal level 5) untuk jarak lebih lega di layar besar.
+            */}
+            <Container fluid className="px-4 px-lg-5">
                 {/* Logo/Brand Tixify */}
                 <Navbar.Brand 
                     onClick={() => navigate("/")} 
                     style={{ 
                         cursor: "pointer", 
-                        fontWeight: "bold", 
-                        fontSize: "28px",
-                        color: "#374151",
-                        marginRight: "auto",
+                        fontWeight: "800", // Lebih tebal
+                        fontSize: "26px",
+                        letterSpacing: "1px",
+                        color: "white", // Fallback color
                         display: "flex",
                         alignItems: "center",
-                        gap: "12px"
                     }}
                 >
                     <span style={{ 
-                        background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+                        // Gradasi teks dibuat lebih terang (Neon) agar kontras dengan background gelap
+                        background: "linear-gradient(135deg, #60a5fa, #a78bfa)", 
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
                         backgroundClip: "text"
@@ -70,108 +107,69 @@ const TopNavbar = () => {
                     </span>
                 </Navbar.Brand>
 
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Toggle aria-controls="basic-navbar-nav" className="border-0" />
                 
                 <Navbar.Collapse id="basic-navbar-nav">
-                    {/* Menu Tengah */}
                     <Nav className="mx-auto">
-                        {/* Anda bisa menambahkan menu tambahan di sini jika diperlukan */}
+                        {/* Space kosong di tengah */}
                     </Nav>
 
-                    {/* Menu Kanan - Berubah berdasarkan status autentikasi */}
-                    <Nav className="align-items-center" style={{ gap: "12px" }}>
-                        {/* Film Button - selalu tampil */}
+                    {/* Menu Kanan */}
+                    <Nav className="align-items-center gap-3 mt-3 mt-lg-0">
+                        
+                        {/* Film Button */}
                         <Button 
-                            variant="outline-secondary"
+                            style={ghostButtonStyle}
+                            className="btn-ghost-hover"
                             onClick={() => navigate("/movies")}
-                            style={{
-                                border: "2px solid #6b7280",
-                                color: "#6b7280",
-                                fontWeight: "600",
-                                borderRadius: "8px",
-                                padding: "8px 20px",
-                                transition: "all 0.3s ease",
-                                backgroundColor: "transparent"
-                            }}
-                            className="btn-hover"
                         >
                             Film
                         </Button>
 
-                        {/* Jika sudah login, tampilkan tombol dashboard dan logout */}
                         {isAuthenticated ? (
                             <>
-                                {/* Dashboard Button */}
+                                {/* Dashboard Button (Primary) */}
                                 <Button 
-                                    variant="primary"
+                                    style={primaryGradientStyle}
+                                    className="btn-gradient-hover"
                                     onClick={() => navigate("/dashboard")}
-                                    style={{
-                                        background: "linear-gradient(135deg, #ffffffff, #ffffffff)",
-                                        border: "2px solid #6b7280",
-                                        color: "#6b7280",
-                                        fontWeight: "600",
-                                        borderRadius: "8px",
-                                        padding: "8px 20px",
-                                        transition: "all 0.3s ease"
-                                        
-                                    }}
-                                    className="btn-hover"
                                 >
-                                    <i className="bi bi-speedometer2 me-1"></i> Dashboard
+                                    <i className="bi bi-speedometer2 me-2"></i>Dashboard
                                 </Button>
 
-                                {/* Logout Button */}
+                                {/* Logout Button (Danger - tapi dibuat minimalis) */}
                                 <Button 
-                                    variant="outline-danger"
+                                    variant="link" // Ubah jadi text link agar tidak terlalu ramai tombolnya
                                     onClick={handleLogout}
                                     style={{
-                                        border: "2px solid #ef4444",
-                                        color: "#ef4444",
-                                        fontWeight: "600",
-                                        borderRadius: "8px",
-                                        padding: "8px 20px",
-                                        transition: "all 0.3s ease",
-                                        backgroundColor: "transparent"
+                                        color: "rgba(255,255,255,0.7)",
+                                        fontWeight: "500",
+                                        textDecoration: "none",
+                                        padding: "8px 15px"
                                     }}
-                                    className="btn-hover"
+                                    className="text-hover-danger"
+                                    onMouseOver={(e) => e.target.style.color = "#ff6b6b"}
+                                    onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,0.7)"}
                                 >
-                                    <i className="bi bi-box-arrow-right me-1"></i> Logout
+                                    Logout
                                 </Button>
                             </>
                         ) : (
-                            /* Jika belum login, tampilkan tombol login dan register */
                             <>
                                 {/* Login Button */}
                                 <Button 
-                                    variant="outline-secondary"
+                                    style={ghostButtonStyle}
+                                    className="btn-ghost-hover"
                                     onClick={() => navigate("/login")}
-                                    style={{
-                                        border: "2px solid #6b7280",
-                                        color: "#6b7280",
-                                        fontWeight: "600",
-                                        borderRadius: "8px",
-                                        padding: "8px 20px",
-                                        transition: "all 0.3s ease",
-                                        backgroundColor: "transparent"
-                                    }}
-                                    className="btn-hover"
                                 >
                                     Login
                                 </Button>
 
-                                {/* Register Button */}
+                                {/* Register Button (Primary CTA) */}
                                 <Button 
-                                    variant="primary"
+                                    style={primaryGradientStyle}
+                                    className="btn-gradient-hover"
                                     onClick={() => navigate("/register")}
-                                    style={{
-                                        background: "linear-gradient(135deg, #6b7280, #9ca3af)",
-                                        border: "none",
-                                        fontWeight: "600",
-                                        borderRadius: "8px",
-                                        padding: "8px 20px",
-                                        transition: "all 0.3s ease"
-                                    }}
-                                    className="btn-hover"
                                 >
                                     Register
                                 </Button>
@@ -181,10 +179,25 @@ const TopNavbar = () => {
                 </Navbar.Collapse>
             </Container>
 
+            {/* CSS Global/Scope untuk Hover Effects yang lebih smooth */}
             <style jsx>{`
-                .btn-hover:hover {
+                /* Hover effect untuk Ghost Button (Film/Login) */
+                .btn-ghost-hover:hover {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    border-color: white !important;
+                    transform: translateY(-1px);
+                }
+
+                /* Hover effect untuk Gradient Button (Register/Dashboard) */
+                .btn-gradient-hover:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6) !important;
+                    filter: brightness(1.1);
+                }
+                
+                /* Penyesuaian ikon hamburger saat mobile dibuka */
+                .navbar-toggler:focus {
+                    box-shadow: none;
                 }
             `}</style>
         </Navbar>

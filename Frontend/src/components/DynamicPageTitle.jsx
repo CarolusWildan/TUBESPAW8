@@ -20,8 +20,8 @@ const DynamicPageTitle = () => {
     return (
         <HelmetProvider>
             <Helmet>
-                <title>{switchPageTitle(location.pathname)} | Atma Kitchen</title>
-                <meta name="description" content="Atma Kitchen the best bakery in town" />
+                <title>{switchPageTitle(location.pathname)} | TIXIFY</title>
+                <meta name="description" content="Tixify The Best Studio" />
             </Helmet>
         </HelmetProvider>
     );
