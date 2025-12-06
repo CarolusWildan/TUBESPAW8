@@ -30,7 +30,7 @@ const FormRegister = () => {
         setIsSubmitting(true);
         setError(null);
 
-        // ⚠️ PERBAIKAN: Hanya validasi field yang ADA di form
+        // Validasi field
         if (!formData.nama || !formData.email || !formData.password) {
             toast.error("Semua field wajib diisi!");
             setIsSubmitting(false);
@@ -53,11 +53,13 @@ const FormRegister = () => {
         }
 
         try {
-            console.log("Data yang dikirim:", formData);
+            console.log("📤 Data yang dikirim ke backend:", formData);
+            console.log("🔗 Endpoint:", API_REGISTER_URL);
             
             const response = await axios.post(API_REGISTER_URL, formData);
             
-            console.log("Response dari API:", response.data);
+            console.log("✅ Response dari API:", response.data);
+            console.log("📊 Status Code:", response.status);
 
             toast.success("Registrasi Berhasil! Silakan Login.");
             
@@ -66,16 +68,28 @@ const FormRegister = () => {
             }, 1500);
 
         } catch (err) {
-            console.error("Registrasi Gagal:", err);
+            console.error("❌ Registrasi Gagal:", err);
             
-            if (err.response && err.response.data.errors) {
-                const validationErrors = Object.values(err.response.data.errors).flat();
-                setError(validationErrors.join(' '));
-                toast.error(validationErrors.join(', '));
-            } else if (err.response && err.response.data.message) {
-                setError(err.response.data.message);
-                toast.error(err.response.data.message);
+            // Debug lebih detail
+            if (err.response) {
+                console.error("📊 Status Error:", err.response.status);
+                console.error("📝 Error Data:", err.response.data);
+                console.error("📋 Error Headers:", err.response.headers);
+                
+                if (err.response.data?.errors) {
+                    const validationErrors = Object.values(err.response.data.errors).flat();
+                    setError(validationErrors.join(' '));
+                    toast.error(validationErrors.join(', '));
+                } else if (err.response.data?.message) {
+                    setError(err.response.data.message);
+                    toast.error(err.response.data.message);
+                }
+            } else if (err.request) {
+                console.error("🚫 Tidak ada response:", err.request);
+                setError("Tidak ada respon dari server. Cek koneksi internet atau backend.");
+                toast.error("Server tidak merespon. Cek apakah backend berjalan.");
             } else {
+                console.error("⚠️ Error lain:", err.message);
                 setError("Terjadi kesalahan saat registrasi.");
                 toast.error("Terjadi kesalahan saat registrasi.");
             }

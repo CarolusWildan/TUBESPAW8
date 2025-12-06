@@ -6,85 +6,214 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
-            'nama'=>'required|string|max:255',
-            'email'=>'required|string|email|max:255|unique:users',
-            'password'=>'required|string|max:255|min:8',
-            'role'     => 'required|in:admin,user',
+        // Gunakan Validator untuk error handling yang lebih baik
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|max:255',
+            'role' => 'required|in:admin,user',
         ]);
 
-        $user = User::create([
-            'nama'  => $request->nama,
-            'email' => $request->email,
-            'password' => $request->password,
-            'role' => $request->role,
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
+        }
 
-        return response()->json([
-            'user'=> $user,
-            'message' => 'user registered successfully'
-        ], 201);
+        try {
+            $user = User::create([
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'password' => Hash::make($request->password), // ✅ PERBAIKAN: HASH PASSWORD
+                'role' => $request->role,
+            ]);
+
+            // Buat token untuk auto-login setelah registrasi (opsional)
+            $token = $user->createToken('Personal Access Token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+                'token' => $token, // Opsional: kirim token untuk auto-login
+                'message' => 'User registered successfully'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to register user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email'=>'required|string|email',
-            'password'=>'required|string',
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if(!$user || !Hash::check($request->password, $user->password)){
-            return response()->json(['message' => 'input invalid'],401);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
         }
 
+        // Cari user berdasarkan email
+        $user = User::where('email', $request->email)->first();
+
+        // Cek jika user tidak ditemukan atau password salah
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
+
+        // Hapus semua token lama (optional)
+        $user->tokens()->delete();
+
+        // Buat token baru
         $token = $user->createToken('Personal Access Token')->plainTextToken;
 
         return response()->json([
-            'detail' => $user,
-            'token' => $token
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'nama' => $user->nama,
+                'email' => $user->email,
+                'role' => $user->role,
+                'created_at' => $user->created_at,
+            ],
+            'token' => $token,
+            'message' => 'Login successful'
         ]);
     }
 
-
-    //read
+    // Read semua user
     public function index()
     {
-        $allUsers = User::all();
-        return response()->json($allUsers);
+        try {
+            $allUsers = User::all();
+            return response()->json([
+                'success' => true,
+                'data' => $allUsers,
+                'message' => 'Users retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve users',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function update(Request $request, string $id_user)
+    // Update user
+    public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            'password'=>'required',
+        $validator = Validator::make($request->all(), [
+            'nama' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'sometimes|string|min:8',
+            'role' => 'sometimes|in:admin,user',
         ]);
 
-        $user = Auth::user(); 
-        $user->update([
-            'password' => $validatedData['password'],
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
+        }
 
-        return response()->json([
-            'message' => 'password updated',
-        ]);
+        try {
+            $user = User::find($id);
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Update hanya field yang ada di request
+            if ($request->has('nama')) {
+                $user->nama = $request->nama;
+            }
+            
+            if ($request->has('email')) {
+                $user->email = $request->email;
+            }
+            
+            if ($request->has('password')) {
+                $user->password = Hash::make($request->password);
+            }
+            
+            if ($request->has('role')) {
+                $user->role = $request->role;
+            }
+
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+                'message' => 'User updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function delete(string $id)
+    // Delete user
+    public function delete($id)
     {
-        $user = Auth::user(); 
+        try {
+            $user = User::find($id);
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
 
-        $user->delete();
+            // Cek jika user mencoba menghapus dirinya sendiri
+            $currentUser = Auth::user();
+            if ($currentUser && $currentUser->id == $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot delete your own account'
+                ], 403);
+            }
 
-        return response()->json([
-            'message' => 'Account deleted successfully',
-        ], 200);
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-
 }

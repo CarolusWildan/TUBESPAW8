@@ -7,9 +7,9 @@ const RegisterPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const user = localStorage.getItem("user");
-        if (user) {
-            navigate("/register");
+        const token = localStorage.getItem("auth_token");
+        if (token) {
+            navigate("/dashboard");
         }
     }, [navigate]);
 
