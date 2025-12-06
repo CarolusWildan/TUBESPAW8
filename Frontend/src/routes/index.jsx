@@ -7,6 +7,7 @@ import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import FilmPage from "../pages/FilmPage";
 import KelolaFilmPage from "../pages/KelolaFilmPage";
+import KelolaStudioPage from "../pages/KelolaStudioPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Protected Route Component
@@ -71,6 +72,14 @@ const router = createBrowserRouter([
                 element: (
                     <AdminRoute>
                         <KelolaFilmPage />
+                    </AdminRoute>
+                ),
+            },
+            {
+                path: "/kelola-studio",
+                element: (
+                    <AdminRoute>
+                        <KelolaStudioPage />
                     </AdminRoute>
                 ),
             },
