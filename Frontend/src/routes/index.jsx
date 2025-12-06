@@ -6,10 +6,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import FilmPage from "../pages/FilmPage";
-import CreateFilmPage from "../pages/CreateFilmPage";
 import KelolaFilmPage from "../pages/KelolaFilmPage";
-import EditFilmPage from "../pages/EditFilmPage";
-import DeleteFilmPage from "../pages/DeleteFilmPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Protected Route Component
@@ -70,34 +67,10 @@ const router = createBrowserRouter([
                 element: <FilmPage />,
             },
             {
-                path: "/tambah-film",
-                element: (
-                    <AdminRoute>
-                        <CreateFilmPage />
-                    </AdminRoute>
-                ),
-            },
-            {
                 path: "/kelola-film",
                 element: (
                     <AdminRoute>
                         <KelolaFilmPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/edit-film/:id_film",
-                element: (
-                    <AdminRoute>
-                        <EditFilmPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/hapus-film/:id_film",
-                element: (
-                    <AdminRoute>
-                        <DeleteFilmPage />
                     </AdminRoute>
                 ),
             },

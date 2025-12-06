@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Breadcrumb, Alert, Button, Table, Badge, Spinner, Modal, Form, InputGroup} from "react-bootstrap";
+import { 
+  Container, Row, Col, Card, Breadcrumb, Alert, Button, 
+  Table, Badge, Spinner, Modal, Form, InputGroup 
+} from "react-bootstrap";
 import { toast } from "sonner";
 import axios from 'axios';
+import FormKelolaFilm from "../components/FormKelolaFilm";
 
 const KelolaFilmPage = () => {
     const navigate = useNavigate();
@@ -15,12 +19,18 @@ const KelolaFilmPage = () => {
     const [filterGenre, setFilterGenre] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [filmToDelete, setFilmToDelete] = useState(null);
-    const [deleting, setDeleting] = useState(false);
-    
+    // State untuk modal
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    
+    // State untuk data yang dipilih
     const [selectedFilm, setSelectedFilm] = useState(null);
+    const [filmToDelete, setFilmToDelete] = useState(null);
+    const [filmToEdit, setFilmToEdit] = useState(null);
+    
+    const [deleting, setDeleting] = useState(false);
 
     const API_FILM_URL = 'http://localhost:8000/api/films';
 
@@ -103,42 +113,199 @@ const KelolaFilmPage = () => {
         return matchesSearch && matchesGenre && matchesStatus;
     });
 
-    // Handle delete
-    const handleDeleteClick = (film) => {
-        setFilmToDelete(film);
-        setShowDeleteModal(true);
-    };
+    // ============= MODAL HANDLERS =============
 
-    const handleConfirmDelete = async () => {
-        if (!filmToDelete) return;
-        
-        setDeleting(true);
-        try {
-            const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_FILM_URL}/${filmToDelete.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            toast.success(`Film "${filmToDelete.judul}" berhasil dihapus`);
-            setFilms(films.filter(film => film.id !== filmToDelete.id));
-        } catch (err) {
-            console.error("Gagal menghapus film:", err);
-            toast.error("Gagal menghapus film");
-        } finally {
-            setDeleting(false);
-            setShowDeleteModal(false);
-            setFilmToDelete(null);
-        }
-    };
-
-    // Handle view details
+    // Detail Modal
     const handleViewDetails = (film) => {
         setSelectedFilm(film);
         setShowDetailModal(true);
     };
+
+    // Create Modal
+    const handleOpenCreateModal = () => {
+        setShowCreateModal(true);
+    };
+
+    // Edit Modal
+    const handleOpenEditModal = (film) => {
+        setFilmToEdit(film);
+        setShowEditModal(true);
+    };
+
+    // Delete Modal
+    const handleOpenDeleteModal = (film) => {
+        setFilmToDelete(film);
+        setShowDeleteModal(true);
+    };
+
+    // Success callback untuk form
+    const handleFormSuccess = () => {
+        fetchFilms(); // Refresh data
+    };
+
+    // Handle Delete
+    const handleConfirmDelete = async () => {
+        if (!filmToDelete) return;
+        
+        console.log("🗑️ Memulai proses delete...");
+        console.log("🎬 Film yang akan dihapus:", filmToDelete);
+        
+        // Debug: Tampilkan semua ID yang mungkin
+        console.log("🔍 ID yang tersedia:");
+        console.log("  - id:", filmToDelete.id);
+        console.log("  - id_film:", filmToDelete.id_film);
+        console.log("  - _id:", filmToDelete._id);
+        console.log("  - Semua keys:", Object.keys(filmToDelete));
+        
+        setDeleting(true);
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error("Token tidak ditemukan. Silakan login ulang.");
+            }
+            
+            // Tentukan ID yang akan digunakan
+            const filmId = filmToDelete.id_film || filmToDelete.id || filmToDelete._id;
+            console.log("🎯 Menggunakan ID:", filmId);
+            
+            if (!filmId) {
+                throw new Error("ID film tidak ditemukan dalam data.");
+            }
+            
+            // Coba berbagai endpoint dan method
+            const deleteAttempts = [
+                {
+                    method: 'DELETE',
+                    url: `${API_FILM_URL}/${filmId}`,
+                    description: `DELETE ${API_FILM_URL}/${filmId}`
+                },
+                {
+                    method: 'DELETE', 
+                    url: `${API_FILM_URL}/delete/${filmId}`,
+                    description: `DELETE ${API_FILM_URL}/delete/${filmId}`
+                },
+                {
+                    method: 'POST',
+                    url: `${API_FILM_URL}/delete/${filmId}`,
+                    description: `POST ${API_FILM_URL}/delete/${filmId}`
+                },
+                {
+                    method: 'POST',
+                    url: `${API_FILM_URL}/${filmId}/delete`,
+                    description: `POST ${API_FILM_URL}/${filmId}/delete`
+                }
+            ];
+            
+            let lastError = null;
+            
+            for (const attempt of deleteAttempts) {
+                try {
+                    console.log(`🔄 Mencoba: ${attempt.description}`);
+                    
+                    const config = {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    
+                    let response;
+                    
+                    if (attempt.method === 'DELETE') {
+                        response = await axios.delete(attempt.url, config);
+                    } else {
+                        response = await axios.post(attempt.url, {}, config);
+                    }
+                    
+                    console.log(`✅ Berhasil dengan ${attempt.description}:`, response.data);
+                    
+                    // Update state
+                    setFilms(prevFilms => prevFilms.filter(film => {
+                        const filmIdToCompare = film.id_film || film.id || film._id;
+                        return filmIdToCompare !== filmId;
+                    }));
+                    
+                    toast.success(`Film "${filmToDelete.judul}" berhasil dihapus`);
+                    
+                    // Tutup modal
+                    setShowDeleteModal(false);
+                    setFilmToDelete(null);
+                    setDeleting(false);
+                    
+                    return; // Keluar jika berhasil
+                    
+                } catch (err) {
+                    lastError = err;
+                    console.log(`❌ Gagal dengan ${attempt.description}:`, {
+                        status: err.response?.status,
+                        statusText: err.response?.statusText,
+                        data: err.response?.data,
+                        message: err.message
+                    });
+                    
+                    // Jika error 404, mungkin endpoint salah, lanjut ke percobaan berikutnya
+                    if (err.response?.status !== 404) {
+                        // Untuk error selain 404, tampilkan pesan error
+                        console.log("⚠️ Error spesifik:", err.response?.data);
+                    }
+                }
+            }
+            
+            // Jika semua percobaan gagal
+            if (lastError) {
+                throw lastError;
+            }
+            
+        } catch (err) {
+            console.error("❌ Semua percobaan delete gagal:", err);
+            
+            let errorMessage = "Gagal menghapus film. ";
+            let errorDetails = "";
+            
+            if (err.response) {
+                // Server responded with error
+                errorDetails = `Status: ${err.response.status} ${err.response.statusText}`;
+                
+                if (err.response.status === 401) {
+                    errorMessage += "Token tidak valid. Silakan login kembali.";
+                } else if (err.response.status === 403) {
+                    errorMessage += "Anda tidak memiliki izin untuk menghapus film.";
+                } else if (err.response.status === 404) {
+                    errorMessage += "Film tidak ditemukan di server.";
+                } else if (err.response.status === 405) {
+                    errorMessage += "Method tidak didukung oleh server.";
+                } else if (err.response.data?.message) {
+                    errorMessage += err.response.data.message;
+                } else if (err.response.data?.error) {
+                    errorMessage += err.response.data.error;
+                }
+                
+            } else if (err.request) {
+                // Request dibuat tapi tidak ada response
+                errorMessage += "Tidak ada response dari server. ";
+                errorDetails = "Periksa koneksi internet atau server mungkin down.";
+            } else {
+                // Error lainnya
+                errorMessage += err.message || "Terjadi kesalahan tidak diketahui.";
+            }
+            
+            console.log("📋 Error details untuk user:", { errorMessage, errorDetails });
+            
+            // Tampilkan toast dengan detail
+            toast.error(
+                <div>
+                    <div><strong>{errorMessage}</strong></div>
+                    {errorDetails && <div><small>{errorDetails}</small></div>}
+                </div>
+            );
+            
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    // ============= HELPER FUNCTIONS =============
 
     // Format tanggal
     const formatDate = (dateString) => {
@@ -234,7 +401,7 @@ const KelolaFilmPage = () => {
                     <div className="d-flex justify-content-between align-items-center">
                         <Button 
                             variant="primary"
-                            onClick={() => navigate("/tambah-film")}
+                            onClick={handleOpenCreateModal}
                             className="me-2"
                         >
                             <i className="bi bi-plus-circle me-1"></i>Tambah Film
@@ -327,7 +494,7 @@ const KelolaFilmPage = () => {
                         </p>
                         <Button 
                             variant="primary"
-                            onClick={() => navigate("/tambah-film")}
+                            onClick={handleOpenCreateModal}
                             size="sm"
                         >
                             <i className="bi bi-plus-circle me-1"></i>Tambah Film
@@ -350,7 +517,7 @@ const KelolaFilmPage = () => {
                                         <th>Durasi</th>
                                         <th>Tanggal Tayang</th>
                                         <th>Status</th>
-                                        <th width="120" className="text-center">Aksi</th>
+                                        <th width="150" className="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -388,7 +555,7 @@ const KelolaFilmPage = () => {
                                             </td>
                                             <td>
                                                 <div className="d-flex justify-content-center gap-1">
-                                                    {/* Button Detail - Kecil */}
+                                                    {/* Button Detail */}
                                                     <Button
                                                         variant="outline-info"
                                                         size="sm"
@@ -396,29 +563,29 @@ const KelolaFilmPage = () => {
                                                         title="Detail"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-eye"></i>Detail
+                                                        <i className="bi bi-eye"></i>
                                                     </Button>
                                                     
-                                                    {/* Button Edit - Kecil */}
+                                                    {/* Button Edit */}
                                                     <Button
                                                         variant="outline-warning"
                                                         size="sm"
-                                                        onClick={() => navigate(`/edit-film/${film.id_film}`)}
+                                                        onClick={() => handleOpenEditModal(film)}
                                                         title="Edit"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-plus-circle me-1"></i>Edit
+                                                        <i className="bi bi-pencil"></i>
                                                     </Button>
                                                     
-                                                    {/* Button Delete - Kecil */}
+                                                    {/* Button Delete */}
                                                     <Button
                                                         variant="outline-danger"
                                                         size="sm"
-                                                        onClick={() => navigate(`/hapus-film/${film.id_film}`)}
+                                                        onClick={() => handleOpenDeleteModal(film)}
                                                         title="Hapus"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-trash"></i>Delete
+                                                        <i className="bi bi-trash"></i>
                                                     </Button>
                                                 </div>
                                             </td>
@@ -435,6 +602,132 @@ const KelolaFilmPage = () => {
                     </Card.Footer>
                 </Card>
             )}
+
+            {/* ============= MODALS ============= */}
+
+            {/* Detail Film Modal */}
+            <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-primary text-white py-2">
+                    <Modal.Title className="fs-6">
+                        <i className="bi bi-film me-1"></i>Detail Film
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="py-3">
+                    {selectedFilm && (
+                        <Row>
+                            <Col md={12}>
+                                <div className="mb-3">
+                                    <h5 className="fw-bold">{selectedFilm.judul}</h5>
+                                    <Badge bg={getStatusBadge(selectedFilm.status)} className="mb-2">
+                                        {getStatusText(selectedFilm.status)}
+                                    </Badge>
+                                </div>
+                                
+                                <div className="row small">
+                                    <div className="col-6 mb-2">
+                                        <strong>ID Film:</strong>
+                                        <div>
+                                            <i className="bi bi-tag me-1"></i>
+                                            {selectedFilm.id_film}
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Genre:</strong>
+                                        <div><Badge bg="info">{selectedFilm.genre}</Badge></div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Durasi:</strong>
+                                        <div>
+                                            <i className="bi bi-clock me-1"></i>
+                                            {selectedFilm.durasi_film}
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Status:</strong>
+                                        <div>
+                                            <Badge bg={getStatusBadge(selectedFilm.status)}>
+                                                {getStatusText(selectedFilm.status)}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Tanggal Mulai:</strong>
+                                        <div>
+                                            <i className="bi bi-calendar-plus me-1"></i>
+                                            {formatDate(selectedFilm.start_date)}
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Tanggal Selesai:</strong>
+                                        <div>
+                                            <i className="bi bi-calendar-check me-1"></i>
+                                            {selectedFilm.end_date ? formatDate(selectedFilm.end_date) : "-"}
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Dibuat:</strong>
+                                        <div className="text-muted">
+                                            <i className="bi bi-calendar-plus me-1"></i>
+                                            {formatDate(selectedFilm.created_at)}
+                                        </div>
+                                    </div>
+                                    <div className="col-6 mb-2">
+                                        <strong>Diupdate:</strong>
+                                        <div className="text-muted">
+                                            <i className="bi bi-calendar-check me-1"></i>
+                                            {formatDate(selectedFilm.updated_at)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    )}
+                </Modal.Body>
+                <Modal.Footer className="py-2">
+                    <Button 
+                        variant="secondary" 
+                        onClick={() => setShowDetailModal(false)}
+                        size="sm"
+                    >
+                        Tutup
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Create Film Modal */}
+            <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-success text-white py-2">
+                    <Modal.Title className="fs-6">
+                        <i className="bi bi-plus-circle me-1"></i>Tambah Film Baru
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="py-3">
+                    <FormKelolaFilm
+                        mode="create"
+                        onSuccess={handleFormSuccess}
+                        onClose={() => setShowCreateModal(false)}
+                    />
+                </Modal.Body>
+            </Modal>
+
+            {/* Edit Film Modal */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-warning text-white py-2">
+                    <Modal.Title className="fs-6">
+                        <i className="bi bi-pencil me-1"></i>Edit Film
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="py-3">
+                    {filmToEdit && (
+                        <FormKelolaFilm
+                            mode="edit"
+                            filmData={filmToEdit}
+                            onSuccess={handleFormSuccess}
+                            onClose={() => setShowEditModal(false)}
+                        />
+                    )}
+                </Modal.Body>
+            </Modal>
 
             {/* Delete Confirmation Modal */}
             <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered size="sm">
@@ -454,7 +747,7 @@ const KelolaFilmPage = () => {
                             <div className="bg-light p-2 rounded small">
                                 <strong>{filmToDelete.judul}</strong>
                                 <div className="text-muted">
-                                    ID: {filmToDelete.id} | Genre: {filmToDelete.genre}
+                                    ID: {filmToDelete.id_film} | Genre: {filmToDelete.genre}
                                 </div>
                             </div>
                         </>
@@ -485,93 +778,6 @@ const KelolaFilmPage = () => {
                                 <i className="bi bi-trash me-1"></i>Hapus
                             </>
                         )}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Detail Film Modal */}
-            <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered size="lg">
-                <Modal.Header closeButton className="bg-primary text-white py-2">
-                    <Modal.Title className="fs-6">
-                        <i className="bi bi-film me-1"></i>Detail Film
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="py-3">
-                    {selectedFilm && (
-                        <Row>
-                            <Col md={12}>
-                                <div className="mb-3">
-                                    <h5 className="fw-bold">{selectedFilm.judul}</h5>
-                                    <Badge bg={getStatusBadge(selectedFilm.status)} className="mb-2">
-                                        {getStatusText(selectedFilm.status)}
-                                    </Badge>
-                                </div>
-                                
-                                <div className="row small">
-                                    <div className="col-6 mb-2">
-                                        <strong>ID Film:</strong>
-                                        <div>
-                                            <i className="bi bi-clock me-1"></i>
-                                            {selectedFilm.id_film}
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Genre:</strong>
-                                        <div><Badge bg="info">{selectedFilm.genre}</Badge></div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Durasi:</strong>
-                                        <div>
-                                            <i className="bi bi-clock me-1"></i>
-                                            {selectedFilm.durasi_film}
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Status:</strong>
-                                        <div>
-                                            <Badge bg={getStatusBadge(selectedFilm.status)}>
-                                                {getStatusText(selectedFilm.status)}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Tanggal Mulai:</strong>
-                                        <div>
-                                            <i className="bi bi-calendar me-1"></i>
-                                            {formatDate(selectedFilm.start_date)}
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Tanggal Selesai:</strong>
-                                        <div>
-                                            <i className="bi bi-calendar me-1"></i>
-                                            {selectedFilm.end_date ? formatDate(selectedFilm.end_date) : "-"}
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Dibuat:</strong>
-                                        <div className="text-muted">
-                                            {formatDate(selectedFilm.created_at)}
-                                        </div>
-                                    </div>
-                                    <div className="col-6 mb-2">
-                                        <strong>Diupdate:</strong>
-                                        <div className="text-muted">
-                                            {formatDate(selectedFilm.updated_at)}
-                                        </div>
-                                    </div>
-                                </div>
-                            </Col>
-                        </Row>
-                    )}
-                </Modal.Body>
-                <Modal.Footer className="py-2">
-                    <Button 
-                        variant="secondary" 
-                        onClick={() => setShowDetailModal(false)}
-                        size="sm"
-                    >
-                        Tutup
                     </Button>
                 </Modal.Footer>
             </Modal>
