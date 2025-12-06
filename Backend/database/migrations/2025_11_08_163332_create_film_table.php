@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('film', function (Blueprint $table) {
             $table->id('id_film');
-             $table->id('poster_film');
             $table->string('judul');
             $table->string('genre');
             $table->time('durasi_film');

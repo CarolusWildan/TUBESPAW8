@@ -17,7 +17,6 @@ class FilmController extends Controller
     public function create(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'poster_film' => 'required|string|max:255',
             'judul' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'durasi_film' => 'required|date_format:H:i:s',
@@ -33,7 +32,6 @@ class FilmController extends Controller
         }
 
         $film = Film::create([
-            'poster_film' => $request->judul,
             'judul' => $request->judul,
             'genre' => $request->genre,
             'durasi_film' => $request->durasi_film,
@@ -58,7 +56,6 @@ class FilmController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'poster_film' => 'required|string|max:255',
             'judul' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'durasi_film' => 'required|date_format:H:i:s',
@@ -74,7 +71,6 @@ class FilmController extends Controller
         }
 
         $film->update([
-            'poster_film' => $request->judul,
             'judul' => $request->judul,
             'genre' => $request->genre,
             'durasi_film' => $request->durasi_film,
