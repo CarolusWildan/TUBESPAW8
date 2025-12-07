@@ -13,6 +13,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/user', [UserController::class, 'index']);
     Route::post('/user/update/{id}', [UserController::class, 'update']);
     Route::delete('/user/delete/{id}', [UserController::class, 'delete']);
+    Route::post('/beli-tiket', [TransaksiController::class, 'beliTiket']);
+
 
     Route::get('/films', [FilmController::class, 'index']);
     Route::post('/films/create', [FilmController::class, 'create']);
