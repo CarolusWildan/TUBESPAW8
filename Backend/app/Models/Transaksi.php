@@ -11,10 +11,11 @@ class Transaksi extends Model
 
     protected $fillable = [
         'id_user',
+        'id_film',
+        'id_jadwal',
+        'jumlah_tiket',
         'total_harga',
-        'metode',
-        'tanggal_transaksi',
-        'status'
+        'metode'
     ];
 
     public function user()

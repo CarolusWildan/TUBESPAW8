@@ -28,23 +28,19 @@ class TransaksiController extends Controller
 
         $transaksi = Transaksi::create([
             'id_user' => Auth::id(),
+            'id_film' => $request->id_film,
+            'id_jadwal' => $request->id_jadwal,
+            'jumlah_tiket' => count($kursiIds),
             'total_harga' => count($kursiIds) * $request->harga_tiket,
             'metode' => $request->metode,
-            'tanggal_transaksi' => now(),
-            'status' => 'booking'
         ]);
 
         $tiketList = [];
         foreach ($kursiIds as $kursiId) {
+            // Tiket table only has id_transaksi, id_kursi, timestamps per migration
             $tiket = Tiket::create([
                 'id_transaksi' => $transaksi->id_transaksi,
-                'id_film' => $request->id_film,
-                'id_user' => Auth::id(),
                 'id_kursi' => $kursiId,
-                'id_jadwal' => $request->id_jadwal,
-                'tanggal_pemesanan' => now(),
-                'jumlah_tiket' => 1,
-                'harga_tiket' => $request->harga_tiket
             ]);
             $tiketList[] = $tiket;
             TransaksiDetail::create([
@@ -53,12 +49,13 @@ class TransaksiController extends Controller
             ]);
         }
 
-        Kursi::whereIn('id_kursi', $kursiIds)->update(['status' => 'unavailable']);
+        Kursi::whereIn('id_kursi', $kursiIds)->update(['status' => 'terpesan']);
 
         return response()->json([
             'message' => 'Tiket berhasil dipesan',
             'transaksi' => $transaksi,
-            'tiket' => $tiketList
+            'tiket' => $tiketList,
+            'transaksidetail' => 'created successfully'
         ], 201);
     }
 }
