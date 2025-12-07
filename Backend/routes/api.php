@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\StudioController;
@@ -26,8 +27,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/studio/update/{id}', [StudioController::class, 'update']);
     Route::delete('/studio/delete/{id}', [StudioController::class, 'delete']);
 
-    Route::get('/jadwal', [StudioController::class, 'index']);
-    Route::post('/jadwal/create', [StudioController::class, 'create']);
-    Route::post('/jadwal/update/{id}', [StudioController::class, 'update']);
-    Route::delete('/jadwal/delete/{id}', [StudioController::class, 'delete']);
+    Route::get('/jadwal', [JadwalController::class, 'index']);
+    Route::post('/jadwal/create', [JadwalController::class, 'create']);
+    Route::post('/jadwal/update/{id}', [JadwalController::class, 'update']);
+    Route::delete('/jadwal/delete/{id}', [JadwalController::class, 'delete']);
 });

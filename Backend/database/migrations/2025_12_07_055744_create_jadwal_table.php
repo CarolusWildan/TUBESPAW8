@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('id_jadwal');
             $table->unsignedBigInteger('id_film');
             $table->unsignedBigInteger('id_studio');
-            $table->date('tanggal');
+            $table->date('tanggal_tayang');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();
