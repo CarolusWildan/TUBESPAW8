@@ -3,6 +3,7 @@
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\StudioController;
+use App\Http\Controllers\TransaksiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/user/update/{id}', [UserController::class, 'update']);
     Route::delete('/user/delete/{id}', [UserController::class, 'delete']);
     Route::post('/beli-tiket', [TransaksiController::class, 'beliTiket']);
-
 
     Route::get('/films', [FilmController::class, 'index']);
     Route::post('/films/create', [FilmController::class, 'create']);
