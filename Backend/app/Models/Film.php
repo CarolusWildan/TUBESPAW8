@@ -19,4 +19,10 @@ class Film extends Model
         'end_date',
         'status',
     ];
+
+    public function jadwal()
+    {
+        return $this->hasMany(Jadwal::class, 'id_film', 'id_film');
+    }
+
 }
