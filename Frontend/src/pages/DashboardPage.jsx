@@ -157,6 +157,22 @@ const DashboardPage = () => {
                                     </Col>
                                     <Col>
                                         <div className="text-center p-3">
+                                            <div className="bg-success bg-opacity-10 p-3 rounded-circle d-inline-flex">
+                                                <span style={{ fontSize: "24px" }}>📊</span>
+                                            </div>
+                                            <h6 className="mt-2">Kelola Jadwal</h6>
+                                            <p className="text-muted small">Tambah, Edit, atau Hapus Studio yang ada</p>
+                                            <Button 
+                                                variant="outline-success" 
+                                                size="sm"
+                                                onClick={() => navigate("/kelola-jadwal")}
+                                            >
+                                                Kelola
+                                            </Button>
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <div className="text-center p-3">
                                             <div className="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-flex">
                                                 <span style={{ fontSize: "24px" }}>👥</span>
                                             </div>

@@ -8,6 +8,7 @@ import DashboardPage from "../pages/DashboardPage";
 import FilmPage from "../pages/FilmPage";
 import KelolaFilmPage from "../pages/KelolaFilmPage";
 import KelolaStudioPage from "../pages/KelolaStudioPage";
+import KelolaJadwalPage from "../pages/KelolaJadwalPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Protected Route Component
@@ -80,6 +81,14 @@ const router = createBrowserRouter([
                 element: (
                     <AdminRoute>
                         <KelolaStudioPage />
+                    </AdminRoute>
+                ),
+            },
+            {
+                path: "/kelola-jadwal",
+                element: (
+                    <AdminRoute>
+                        <KelolaJadwalPage />
                     </AdminRoute>
                 ),
             },
