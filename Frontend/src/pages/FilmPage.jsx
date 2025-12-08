@@ -1,89 +1,84 @@
-import { useState } from "react";
-import { Container, Row, Col, Card, Badge, Button } from "react-bootstrap";
-import imgFilm1 from "../assets/images/film1.png";
-import imgFilm2 from "../assets/images/film2.png";
-import imgFilm3 from "../assets/images/film3.png";
-import imgFilm4 from "../assets/images/film4.png";
-import imgFilm5 from "../assets/images/film5.png";
-import imgFilm6 from "../assets/images/film6.png";
-import imgFilm7 from "../assets/images/film7.png";
-import imgFilm8 from "../assets/images/film8.png";
-import imgFilm9 from "../assets/images/film9.png";
+import { useState, useEffect } from "react";
+import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // 1. IMPORT INI
+import axios from "axios";
 
 const FilmPage = () => {
+    const navigate = useNavigate(); // 2. INISIALISASI NAVIGATE
     const [activeTab, setActiveTab] = useState("now_playing");
+    
+    // State untuk data film dari API
+    const [nowPlayingFilms, setNowPlayingFilms] = useState([]);
+    const [comingSoonFilms, setComingSoonFilms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Data film - Sedang Tayang
-    const nowPlayingFilms = [
-        {
-            id: 1,
-            title: "MONSTA X: CONNECT X IN CINEMAS",
-            image: imgFilm1,
-            genre: "Music",
-            duration: "120 min"
-        },
-        {
-            id: 2,
-            title: "RIBA",
-            image: imgFilm2,
-            genre: "Horror",
-            duration: "95 min"
-        },
-        {
-            id: 3,
-            title: "MERTUA NGERI KALI",
-            image: imgFilm3,
-            genre: "Comedy",
-            duration: "192 min"
-        },
-        {
-            id: 4,
-            title: "AGAK LAEN",
-            image: imgFilm4,
-            genre: "Comedy",
-            duration: "161 min"
-        }
-    ];
+    // === KONFIGURASI API ===
+    const API_URL = 'http://localhost:8000/api/films'; 
+    const STORAGE_URL = 'http://localhost:8000/storage/'; 
 
-    // Data film - Akan Tayang
-    const comingSoonFilms = [
-        {
-            id: 5,
-            title: "PANGKU",
-            image: imgFilm5,
-            genre: "Drama",
-            duration: "140 min"
-        },
-        {
-            id: 6,
-            title: "AIR MATA MUALAF",
-            image: imgFilm6,
-            genre: "Drama",
-            duration: "175 min"
-        },
-        {
-            id: 7,
-            title: "SAMPAI TITIK TERAKHIRMU",
-            image: imgFilm7,
-            genre: "Drama",
-            duration: "150 min"
-        },
-        {
-            id: 8,
-            title: "NOW YOU SEE MEE",
-            image: imgFilm8,
-            genre: "Action",
-            duration: "110 min"
-        },
-        {
-            id: 9,
-            title: "ZOOTOPIA 2",
-            image: imgFilm9,
-            genre: "Animation",
-            duration: "145 min"
-        }
-    ];
+    // Helper untuk menangani URL gambar
+    const getImageUrl = (path) => {
+        if (!path) return "https://placehold.co/300x450/2a2a3d/ffffff?text=No+Image";
+        if (path.startsWith('http')) return path;
+        return `${STORAGE_URL}${path}`;
+    };
 
+    // Fetch Data saat komponen dimuat
+    useEffect(() => {
+        const fetchMovies = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(API_URL);
+                const movies = response.data; 
+
+                const moviesArray = Array.isArray(movies) ? movies : (movies.data || []);
+
+                if (!Array.isArray(moviesArray)) {
+                    throw new Error("Format data API tidak valid");
+                }
+
+                const showing = moviesArray.filter(m => m.status === 'showing');
+                const coming = moviesArray.filter(m => m.status === 'coming soon');
+
+                setNowPlayingFilms(showing.map(m => ({
+                    id: m.id_film,
+                    title: m.judul,
+                    image: getImageUrl(m.cover_path),
+                    genre: m.genre,
+                    duration: m.durasi_film 
+                })));
+
+                setComingSoonFilms(coming.map(m => ({
+                    id: m.id_film,
+                    title: m.judul,
+                    image: getImageUrl(m.cover_path),
+                    genre: m.genre,
+                    duration: m.durasi_film
+                })));
+
+            } catch (err) {
+                console.error("Gagal mengambil data film:", err);
+                setError("Gagal memuat data film dari server.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMovies();
+    }, []);
+
+    // 3. FUNGSI HANDLER NAVIGASI
+    const handleBookTicket = (film) => {
+        // Mengarahkan ke halaman pesan tiket dengan membawa data film (state)
+        navigate('/book-ticket', { 
+            state: { 
+                movie: film 
+            } 
+        });
+    };
+
+    // Tentukan film mana yang ditampilkan berdasarkan tab aktif
     const films = activeTab === "now_playing" ? nowPlayingFilms : comingSoonFilms;
 
     return (
@@ -99,7 +94,7 @@ const FilmPage = () => {
                                 fontSize: "12px",
                                 padding: "6px 12px",
                                 border: "1px solid rgba(255,255,255,0.2)",
-                                background: "rgba(255,255,255,0.9)" // Sedikit transparan
+                                background: "rgba(255,255,255,0.9)" 
                             }}
                         >
                             JABODETABEK
@@ -155,114 +150,139 @@ const FilmPage = () => {
                 </Col>
             </Row>
 
-            {/* Film Grid */}
-            <Row>
-                {films.map((film) => (
-                    <Col key={film.id} xs={12} sm={6} md={4} lg={3} className="mb-4">
-                        <Card 
-                            className="h-100 border-0" 
-                            style={{ 
-                                borderRadius: "16px",
-                                overflow: "hidden",
-                                transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                                // STYLE UTAMA: GLASSMORPHISM
-                                background: "rgba(255, 255, 255, 0.05)", 
-                                backdropFilter: "blur(10px)",
-                                border: "1px solid rgba(255, 255, 255, 0.1)",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = "translateY(-8px)";
-                                e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.3)";
-                                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = "translateY(0)";
-                                e.currentTarget.style.boxShadow = "none";
-                                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
-                            }}
-                        >
-                            {/* Film Image */}
-                            <div style={{ position: "relative", overflow: "hidden" }}>
-                                <Card.Img 
-                                    variant="top" 
-                                    src={film.image} 
-                                    style={{ 
-                                        height: "320px", 
-                                        objectFit: "cover",
-                                        width: "100%"
-                                    }}
-                                />
-                                {/* Overlay Gradient Halus di bawah gambar */}
-                                <div style={{
-                                    position: "absolute",
-                                    bottom: 0,
-                                    left: 0,
-                                    width: "100%",
-                                    height: "30%",
-                                    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)"
-                                }}></div>
-                            </div>
-                            
-                            <Card.Body className="p-3 d-flex flex-column">
-                                {/* Film Title */}
-                                <Card.Title 
-                                    className="fw-bold mb-2 text-white" 
-                                    style={{ 
-                                        fontSize: "16px",
-                                        lineHeight: "1.4",
-                                        minHeight: "44px",
-                                        display: "-webkit-box",
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: "vertical",
-                                        overflow: "hidden"
-                                    }}
-                                >
-                                    {film.title}
-                                </Card.Title>
-
-                                {/* Film Info */}
-                                <div className="mb-3">
-                                    <small className="d-block" style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
-                                        {film.genre}
-                                    </small>
-                                    <small style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
-                                        {film.duration}
-                                    </small>
+            {/* Content Area */}
+            {loading ? (
+                <div className="text-center py-5">
+                    <Spinner animation="border" variant="light" />
+                    <p className="mt-3 text-white-50">Sedang memuat film...</p>
+                </div>
+            ) : error ? (
+                <Alert variant="danger" className="text-center bg-transparent border-danger text-danger">
+                    {error}
+                </Alert>
+            ) : films.length === 0 ? (
+                <div className="text-center py-5 text-white-50">
+                    <h4>Belum ada film di kategori ini.</h4>
+                </div>
+            ) : (
+                <Row>
+                    {films.map((film) => (
+                        <Col key={film.id} xs={12} sm={6} md={4} lg={3} className="mb-4">
+                            <Card 
+                                className="h-100 border-0" 
+                                style={{ 
+                                    borderRadius: "16px",
+                                    overflow: "hidden",
+                                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                                    background: "rgba(255, 255, 255, 0.05)", 
+                                    backdropFilter: "blur(10px)",
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = "translateY(-8px)";
+                                    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.3)";
+                                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "none";
+                                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+                                }}
+                            >
+                                {/* Film Image */}
+                                <div style={{ position: "relative", overflow: "hidden" }}>
+                                    <Card.Img 
+                                        variant="top" 
+                                        src={film.image} 
+                                        style={{ 
+                                            height: "320px", 
+                                            objectFit: "cover",
+                                            width: "100%"
+                                        }}
+                                        onError={(e) => { e.target.src = "https://placehold.co/300x450/2a2a3d/ffffff?text=No+Image"; }}
+                                    />
+                                    {/* Overlay Gradient Halus */}
+                                    <div style={{
+                                        position: "absolute",
+                                        bottom: 0,
+                                        left: 0,
+                                        width: "100%",
+                                        height: "30%",
+                                        background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)"
+                                    }}></div>
                                 </div>
 
-                                {/* Action Button */}
-                                <div className="mt-auto">
-                                    <Button 
-                                        className="w-100"
-                                        style={{
-                                            background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
-                                            border: "none",
-                                            borderRadius: "50px", // Konsisten dengan tombol Homepage
-                                            padding: "8px",
-                                            fontSize: "14px",
-                                            fontWeight: "600",
-                                            boxShadow: "0 4px 15px rgba(37, 117, 252, 0.3)"
+                                <Card.Body className="p-3 d-flex flex-column">
+                                    {/* Film Title */}
+                                    <Card.Title 
+                                        className="fw-bold mb-2 text-white" 
+                                        style={{ 
+                                            fontSize: "16px",
+                                            lineHeight: "1.4",
+                                            minHeight: "44px",
+                                            display: "-webkit-box",
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: "vertical",
+                                            overflow: "hidden"
                                         }}
                                     >
-                                        {activeTab === "now_playing" ? "Pesan Tiket" : "Notify Me"}
-                                    </Button>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
+                                        {film.title}
+                                    </Card.Title>
+
+                                    {/* Film Info */}
+                                    <div className="mb-3">
+                                        <small className="d-block" style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
+                                            {film.genre}
+                                        </small>
+                                        <small style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>
+                                            {film.duration}
+                                        </small>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <div className="mt-auto">
+                                        <Button 
+                                            className="w-100"
+                                            style={{
+                                                background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
+                                                border: "none",
+                                                borderRadius: "50px", 
+                                                padding: "8px",
+                                                fontSize: "14px",
+                                                fontWeight: "600",
+                                                boxShadow: "0 4px 15px rgba(37, 117, 252, 0.3)"
+                                            }}
+                                            // 4. PASANG EVENT ONCLICK DI SINI
+                                            onClick={() => {
+                                                if (activeTab === "now_playing") {
+                                                    handleBookTicket(film);
+                                                } else {
+                                                    alert(`Pengingat untuk ${film.title} diaktifkan! (Simulasi)`);
+                                                }
+                                            }}
+                                        >
+                                            {activeTab === "now_playing" ? "Pesan Tiket" : "Notify Me"}
+                                        </Button>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            )}
 
             {/* Info Text */}
-            <Row className="mt-4 mb-5">
-                <Col>
-                    <div className="text-center">
-                        <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.4)" }}>
-                            {films.length} film {activeTab === "now_playing" ? "sedang tayang" : "akan tayang"} di TixifyID
-                        </p>
-                    </div>
-                </Col>
-            </Row>
+            {!loading && (
+                <Row className="mt-4 mb-5">
+                    <Col>
+                        <div className="text-center">
+                            <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.4)" }}>
+                                {films.length} film {activeTab === "now_playing" ? "sedang tayang" : "akan tayang"} di TixifyID
+                            </p>
+                        </div>
+                    </Col>
+                </Row>
+            )}
         </Container>
     );
 };

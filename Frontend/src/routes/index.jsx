@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"; // Tambahkan Navigate
 import { Toaster } from "sonner";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
@@ -9,6 +9,7 @@ import FilmPage from "../pages/FilmPage";
 import KelolaFilmPage from "../pages/KelolaFilmPage";
 import KelolaStudioPage from "../pages/KelolaStudioPage";
 import KelolaJadwalPage from "../pages/KelolaJadwalPage";
+import PesanTiketPage from "../pages/PesanTiketPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Protected Route Component
@@ -23,14 +24,23 @@ const ProtectedRoute = ({ children }) => {
 // Admin Route Component
 const AdminRoute = ({ children }) => {
     const token = localStorage.getItem('auth_token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const userString = localStorage.getItem('user');
+    const user = userString ? JSON.parse(userString) : null;
     
     if (!token) {
         return <Navigate to="/login" replace />;
     }
     
     if (user?.role !== 'admin') {
-        return <div className="text-center mt-5"><h4>🚫 Akses Ditolak - Hanya Admin</h4></div>;
+        return (
+            <div className="vh-100 d-flex justify-content-center align-items-center text-white" style={{background: "#0f0f1a"}}>
+                <div className="text-center">
+                    <h1 className="display-1 fw-bold">403</h1>
+                    <h4>🚫 Akses Ditolak</h4>
+                    <p>Hanya admin yang diizinkan mengakses halaman ini.</p>
+                </div>
+            </div>
+        );
     }
     
     return children;
@@ -68,6 +78,17 @@ const router = createBrowserRouter([
                 path: "/movies",
                 element: <FilmPage />,
             },
+            // === TAMBAHAN PENTING DI SINI ===
+            {
+                path: "/book-ticket", 
+                element: (
+                    // Menggunakan ProtectedRoute agar user harus login sebelum beli tiket
+                    <ProtectedRoute>
+                        <PesanTiketPage />
+                    </ProtectedRoute>
+                ),
+            },
+            // =================================
             {
                 path: "/kelola-film",
                 element: (
