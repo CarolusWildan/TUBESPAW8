@@ -32,3 +32,4 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/jadwal/update/{id}', [JadwalController::class, 'update']);
     Route::delete('/jadwal/delete/{id}', [JadwalController::class, 'delete']);
 });
+    

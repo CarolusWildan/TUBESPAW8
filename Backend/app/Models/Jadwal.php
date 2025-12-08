@@ -13,8 +13,7 @@ class Jadwal extends Model
         'id_film',
         'id_studio',
         'tanggal_tayang',
-        'jam_mulai',
-        'jam_selesai',
+        'jam_tayang',
     ];
 
     // Relasi: Jadwal milik 1 Film

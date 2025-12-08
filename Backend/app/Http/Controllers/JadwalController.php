@@ -17,8 +17,8 @@ class JadwalController extends Controller
         // Menggunakan 'with' untuk Eager Loading (Optimasi Query)
         // Agar frontend langsung dapat nama film & studio, bukan cuma ID-nya.
         $jadwal = Jadwal::with(['film', 'studio'])
-                        ->orderBy('tanggal_tayang', 'desc')
-                        ->get();
+            ->orderBy('tanggal_tayang', 'desc')
+            ->get();
 
         return response()->json([
             'status' => 'success',
@@ -32,53 +32,62 @@ class JadwalController extends Controller
      */
     public function create(Request $request)
     {
-        // 1. Validasi Input Dasar
+        // 1. Validasi Input (Hanya jam_tayang)
         $validator = Validator::make($request->all(), [
-            'id_film'        => 'required|exists:films,id_film',   // Pastikan ID Film ada di tabel films
-            'id_studio'      => 'required|exists:studios,id_studio', // Pastikan ID Studio ada di tabel studios
+            'id_film' => 'required|exists:film,id_film',
+            'id_studio' => 'required|exists:studio,id_studio',
             'tanggal_tayang' => 'required|date|after_or_equal:today',
-            'jam_mulai'      => 'required|date_format:H:i',
-            'jam_selesai'    => 'required|date_format:H:i|after:jam_mulai', // Jam selesai wajib setelah jam mulai
-        ], [
-            'id_film.exists' => 'Film tidak ditemukan.',
-            'id_studio.exists' => 'Studio tidak ditemukan.',
-            'jam_selesai.after' => 'Jam selesai harus lebih akhir dari jam mulai.'
+            'jam_tayang' => 'required|date_format:H:i', // Input user cuma ini
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // 2. VALIDASI LOGIKA: Cek Bentrok Jadwal (Overlap Check)
-        // Logika: Apakah ada jadwal LAIN di studio YG SAMA pada tanggal YG SAMA
-        // dimana rentang waktunya bertabrakan?
-        $bentrok = Jadwal::where('id_studio', $request->id_studio)
-            ->where('tanggal_tayang', $request->tanggal_tayang)
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                      ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                      ->orWhere(function ($q) use ($request) {
-                          $q->where('jam_mulai', '<=', $request->jam_mulai)
-                            ->where('jam_selesai', '>=', $request->jam_selesai);
-                      });
-            })
-            ->exists();
+        // 2. AMBIL DATA FILM (Wajib untuk hitung durasi)
+        // Kita butuh durasi untuk tahu kapan film ini selesai,
+        // supaya tidak menimpa jadwal film lain.
+        $filmBaru = \App\Models\Film::find($request->id_film);
 
-        if ($bentrok) {
+        // Konversi jam tayang baru ke object Carbon
+        $mulaiBaru = \Carbon\Carbon::createFromFormat('H:i', $request->jam_tayang);
+        // Hitung jam selesai berdasarkan durasi film (asumsi durasi dalam menit)
+        $selesaiBaru = $mulaiBaru->copy()->addMinutes($filmBaru->durasi);
+
+        // 3. LOGIKA BENTROK YANG LEBIH RUMIT
+        // Karena tabel jadwal tidak punya jam_selesai, kita harus join ke tabel film
+        // untuk menghitung waktu selesai dari jadwal-jadwal yang SUDAH ADA.
+
+        $bentrok = Jadwal::with('film') // Eager load film untuk akses durasi
+            ->where('id_studio', $request->id_studio)
+            ->where('tanggal_tayang', $request->tanggal_tayang)
+            ->get() // Ambil semua jadwal di hari & studio itu
+            ->filter(function ($jadwalAda) use ($mulaiBaru, $selesaiBaru) {
+                // Kita hitung manual di PHP (Logic Layer)
+                // karena melakukan kalkulasi waktu dinamis di Query SQL itu rumit & berat
+    
+                $mulaiAda = \Carbon\Carbon::createFromFormat('H:i:s', $jadwalAda->jam_tayang);
+                $selesaiAda = $mulaiAda->copy()->addMinutes($jadwalAda->film->durasi);
+
+                // Logika Overlap:
+                // (StartA < EndB) AND (EndA > StartB)
+                return $mulaiBaru->lessThan($selesaiAda) && $selesaiBaru->greaterThan($mulaiAda);
+            });
+
+        if ($bentrok->isNotEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Jadwal bentrok! Studio ini sudah terpakai pada jam tersebut.'
-            ], 409); // 409 Conflict
+                'message' => 'Jadwal bentrok! Ada film lain yang belum selesai pada jam tersebut.'
+            ], 409);
         }
 
-        // 3. Simpan Data
+        // 4. Simpan Data (Sederhana, cuma jam_tayang)
         try {
             $jadwal = Jadwal::create([
                 'id_film' => $request->id_film,
                 'id_studio' => $request->id_studio,
                 'tanggal_tayang' => $request->tanggal_tayang,
-                'jam_mulai' => $request->jam_mulai,
-                'jam_selesai' => $request->jam_selesai,
+                'jam_tayang' => $request->jam_tayang, // Sesuai request Anda
             ]);
 
             return response()->json([
@@ -89,9 +98,8 @@ class JadwalController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
                 'message' => 'Gagal menyimpan data',
-                'error_detail' => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -125,11 +133,10 @@ class JadwalController extends Controller
 
         // Validasi input (bisa disesuaikan jika tidak semua field wajib diupdate)
         $validator = Validator::make($request->all(), [
-            'id_film'        => 'exists:films,id_film',
-            'id_studio'      => 'exists:studios,id_studio',
+            'id_film' => 'exists:films,id_film',
+            'id_studio' => 'exists:studios,id_studio',
             'tanggal_tayang' => 'date',
-            'jam_mulai'      => 'date_format:H:i',
-            'jam_selesai'    => 'date_format:H:i|after:jam_mulai',
+            'jam_tayang' => 'date_format:H:i',
         ]);
 
         if ($validator->fails()) {
@@ -154,7 +161,7 @@ class JadwalController extends Controller
     /**
      * DELETE /api/jadwal/{id}
      */
-    public function destroy($id)
+    public function delete($id)
     {
         $jadwal = Jadwal::find($id);
 
