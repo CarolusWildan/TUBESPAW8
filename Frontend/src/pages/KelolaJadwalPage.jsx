@@ -190,7 +190,7 @@ const KelolaJadwalPage = () => {
     // Get film duration
     const getFilmDuration = (idFilm) => {
         const film = films.find(f => f.id_film === idFilm);
-        return film?.durasi || 0;
+        return film?.durasi_film || 0;
     };
 
     // Calculate end time
@@ -463,7 +463,7 @@ const KelolaJadwalPage = () => {
                                             active={selectedFilm === film.id_film.toString()}
                                             onClick={() => setSelectedFilm(film.id_film.toString())}
                                         >
-                                            {film.judul_film} ({film.genre})
+                                            {film.judul} ({film.genre})
                                         </Dropdown.Item>
                                     ))}
                                 </Dropdown.Menu>
@@ -642,12 +642,12 @@ const KelolaJadwalPage = () => {
                                                 </td>
                                                 <td>
                                                     <div className="fw-medium">
-                                                        {item.jam_tayang} - {endTime}
+                                                        {item.jam_tayang}
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div className="text-muted">
-                                                        {duration} menit
+                                                        {duration}
                                                     </div>
                                                 </td>
                                                 <td>
