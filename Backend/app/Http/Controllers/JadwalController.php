@@ -133,8 +133,8 @@ class JadwalController extends Controller
 
         // Validasi input (bisa disesuaikan jika tidak semua field wajib diupdate)
         $validator = Validator::make($request->all(), [
-            'id_film' => 'exists:films,id_film',
-            'id_studio' => 'exists:studios,id_studio',
+            'id_film' => 'exists:film,id_film',
+            'id_studio' => 'exists:studio,id_studio',
             'tanggal_tayang' => 'date',
             'jam_tayang' => 'date_format:H:i',
         ]);
@@ -163,7 +163,7 @@ class JadwalController extends Controller
      */
     public function delete($id)
     {
-        $jadwal = Jadwal::find($id);
+        $jadwal = Jadwal::where('id_jadwal', $id)->first();
 
         if (!$jadwal) {
             return response()->json(['message' => 'Jadwal tidak ditemukan'], 404);

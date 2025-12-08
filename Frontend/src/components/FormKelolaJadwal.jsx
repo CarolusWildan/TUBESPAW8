@@ -473,16 +473,6 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                 </div>
             )}
             
-            {/* Debug Info (Hapus di production) */}
-            {process.env.NODE_ENV === 'development' && (
-                <div className="mb-3 p-2 bg-dark text-white rounded small">
-                    <div className="fw-bold mb-1">Debug Info:</div>
-                    <div>Selected Film ID: {formData.id_film || "none"}</div>
-                    <div>Films Count: {films.length}</div>
-                    <div>First Film: {films[0]?.judul || "none"}</div>
-                </div>
-            )}
-            
             {/* Action Buttons */}
             <div className="d-flex justify-content-end gap-2 pt-3 border-top">
                 <Button

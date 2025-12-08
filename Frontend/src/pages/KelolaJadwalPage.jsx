@@ -308,40 +308,66 @@ const KelolaJadwalPage = () => {
         setDeleting(true);
         try {
             const token = localStorage.getItem('auth_token');
+            
+            // DEBUG: Log object jadwal yang akan dihapus
+            console.log("🔍 Jadwal to delete object:", jadwalToDelete);
+            console.log("🔍 Available keys:", Object.keys(jadwalToDelete));
+            
+            // PERBAIKAN: Ambil ID dengan benar
             const jadwalId = jadwalToDelete.id_jadwal || jadwalToDelete.id;
+            
+            console.log("📤 Mengirim ID untuk delete:", jadwalId);
+            console.log("📤 Endpoint:", `${API_JADWAL_URL}/delete/${jadwalId}`);
             
             if (!jadwalId) {
                 throw new Error("ID jadwal tidak ditemukan");
             }
             
-            const response = await axios.delete(`${API_JADWAL_URL}/${jadwalId}`, {
+            // PERBAIKAN: Gunakan endpoint DELETE yang benar
+            // Seharusnya: DELETE http://localhost:8000/api/jadwal/delete/{id}
+            const response = await axios.delete(`${API_JADWAL_URL}/delete/${jadwalId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             
-            toast.success(`Jadwal berhasil dihapus`);
+            console.log("✅ Delete response:", response.data);
             
-            // Update state
-            setJadwal(prevJadwal => prevJadwal.filter(item => {
-                const itemId = item.id_jadwal || item.id;
-                return itemId !== jadwalId;
-            }));
-            
-            // Close modal
-            setShowDeleteModal(false);
-            setJadwalToDelete(null);
+            if (response.data.status === 'success') {
+                toast.success(response.data.message || `Jadwal berhasil dihapus`);
+                
+                // Update state
+                setJadwal(prevJadwal => prevJadwal.filter(item => {
+                    const itemId = item.id_jadwal || item.id;
+                    return itemId !== jadwalId;
+                }));
+                
+                // Close modal
+                setShowDeleteModal(false);
+                setJadwalToDelete(null);
+            } else {
+                throw new Error(response.data.message || "Gagal menghapus jadwal");
+            }
             
         } catch (err) {
-            console.error("Gagal menghapus jadwal:", err);
+            console.error("❌ Gagal menghapus jadwal:", err);
+            console.error("❌ Response error:", err.response?.data);
+            console.error("❌ Status error:", err.response?.status);
             
             let errorMessage = "Gagal menghapus jadwal. ";
             
             if (err.response?.status === 404) {
                 errorMessage += "Jadwal tidak ditemukan di server.";
+            } else if (err.response?.status === 401) {
+                errorMessage += "Token tidak valid. Silakan login kembali.";
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user');
+                navigate('/login');
             } else if (err.response?.data?.message) {
                 errorMessage += err.response.data.message;
+            } else if (err.message) {
+                errorMessage += err.message;
             } else {
                 errorMessage += "Cek koneksi atau endpoint API.";
             }
