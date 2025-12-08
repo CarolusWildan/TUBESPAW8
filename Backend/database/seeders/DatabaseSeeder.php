@@ -31,6 +31,8 @@ class DatabaseSeeder extends Seeder
             StudioSeeder::class,
             JadwalSeeder::class,
             KursiSeeder::class,
+            KursiJadwalSeeder::class,
+            KursiJadwalBookedSeeder::class,
         ]);
     }
 }

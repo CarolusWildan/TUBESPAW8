@@ -14,6 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_studio');
             $table->date('tanggal_tayang');
             $table->time('jam_tayang');
+                $table->decimal('harga', 10, 2);
             $table->timestamps();
 
             $table->foreign('id_film')

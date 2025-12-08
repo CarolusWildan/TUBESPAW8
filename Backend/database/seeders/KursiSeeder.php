@@ -21,7 +21,7 @@ class KursiSeeder extends Seeder
             $rows[] = [
                 'id_studio' => $studio->id_studio,
                 'kode_kursi' => $code,
-                'status' => 'tersedia',
+                // 'status' => 'tersedia',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

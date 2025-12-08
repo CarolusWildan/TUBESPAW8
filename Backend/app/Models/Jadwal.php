@@ -14,6 +14,7 @@ class Jadwal extends Model
         'id_studio',
         'tanggal_tayang',
         'jam_tayang',
+        'harga',
     ];
 
     // Relasi: Jadwal milik 1 Film
@@ -32,6 +33,11 @@ class Jadwal extends Model
     public function tiket()
     {
         return $this->hasMany(Tiket::class, 'id_jadwal', 'id_jadwal');
+    }
+
+    public function kursiJadwal()
+    {
+        return $this->hasMany(KursiJadwal::class, 'id_jadwal', 'id_jadwal');
     }
 
     

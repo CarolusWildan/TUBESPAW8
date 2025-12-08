@@ -26,36 +26,55 @@ class TransaksiController extends Controller
         ]);
         $kursiIds = $request->id_kursi;
 
+        $jadwal = Jadwal::findOrFail($request->id_jadwal);
+        $hargaPerTiket = $jadwal->harga;
+
+        $sudahDipesan = \App\Models\KursiJadwal::query()
+            ->where('id_jadwal', $jadwal->id_jadwal)
+            ->whereIn('id_kursi', $kursiIds)
+            ->where('status', 'booked')
+            ->pluck('id_kursi')
+            ->all();
+
+        if (!empty($sudahDipesan)) {
+            return response()->json([
+                'message' => 'Beberapa kursi sudah tidak tersedia untuk jadwal ini',
+                'kursi_tidak_tersedia' => $sudahDipesan,
+            ], 422);
+        }
+
         $transaksi = Transaksi::create([
             'id_user' => Auth::id(),
             'id_film' => $request->id_film,
-            'id_jadwal' => $request->id_jadwal,
+            'id_jadwal' => $jadwal->id_jadwal,
             'jumlah_tiket' => count($kursiIds),
-            'total_harga' => count($kursiIds) * $request->harga_tiket,
+            'total_harga' => count($kursiIds) * $hargaPerTiket,
             'metode' => $request->metode,
         ]);
 
         $tiketList = [];
         foreach ($kursiIds as $kursiId) {
-            // Tiket table only has id_transaksi, id_kursi, timestamps per migration
             $tiket = Tiket::create([
                 'id_transaksi' => $transaksi->id_transaksi,
                 'id_kursi' => $kursiId,
             ]);
             $tiketList[] = $tiket;
-            TransaksiDetail::create([
-                'id_transaksi' => $transaksi->id_transaksi,
-                'id_tiket' => $tiket->id_tiket,
-            ]);
-        }
 
-        Kursi::whereIn('id_kursi', $kursiIds)->update(['status' => 'terpesan']);
+            \App\Models\KursiJadwal::updateOrCreate(
+                [
+                    'id_jadwal' => $jadwal->id_jadwal,
+                    'id_kursi' => $kursiId,
+                ],
+                [
+                    'status' => 'booked',
+                ]
+            );
+        }
 
         return response()->json([
             'message' => 'Tiket berhasil dipesan',
             'transaksi' => $transaksi,
             'tiket' => $tiketList,
-            'transaksidetail' => 'created successfully'
         ], 201);
     }
 }

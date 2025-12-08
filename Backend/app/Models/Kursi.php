@@ -12,7 +12,7 @@ class Kursi extends Model
     protected $fillable = [
         'id_studio',
         'nomor_kursi',
-        'status'
+        // 'status'
     ];
 
     // Relasi: Kursi dimiliki 1 Studio
