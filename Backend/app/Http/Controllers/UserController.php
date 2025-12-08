@@ -12,7 +12,6 @@ class UserController extends Controller
 {
     public function register(Request $request)
     {
-        // Gunakan Validator untuk error handling yang lebih baik
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -31,17 +30,21 @@ class UserController extends Controller
             $user = User::create([
                 'nama' => $request->nama,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), // ✅ PERBAIKAN: HASH PASSWORD
+                'password' => Hash::make($request->password),
                 'role' => $request->role,
             ]);
 
-            // Buat token untuk auto-login setelah registrasi (opsional)
             $token = $user->createToken('Personal Access Token')->plainTextToken;
 
             return response()->json([
                 'success' => true,
-                'user' => $user,
-                'token' => $token, // Opsional: kirim token untuk auto-login
+                'user' => [
+                    'id_user' => $user->id_user, // Gunakan id_user
+                    'nama' => $user->nama,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+                'token' => $token,
                 'message' => 'User registered successfully'
             ], 201);
 
@@ -88,7 +91,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'user' => [
-                'id' => $user->id,
+                'id_user' => $user->id_user, // GANTI: id -> id_user
                 'nama' => $user->nama,
                 'email' => $user->email,
                 'role' => $user->role,
@@ -123,7 +126,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id . ',id_user', // Tambah id_user
             'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|in:admin,user',
         ]);
@@ -136,7 +139,8 @@ class UserController extends Controller
         }
 
         try {
-            $user = User::find($id);
+            // PERBAIKAN: Gunakan where dengan id_user
+            $user = User::where('id_user', $id)->first();
             
             if (!$user) {
                 return response()->json([
@@ -183,7 +187,8 @@ class UserController extends Controller
     public function delete($id)
     {
         try {
-            $user = User::find($id);
+            // PERBAIKAN: Gunakan where dengan id_user
+            $user = User::where('id_user', $id)->first();
             
             if (!$user) {
                 return response()->json([
@@ -194,7 +199,7 @@ class UserController extends Controller
 
             // Cek jika user mencoba menghapus dirinya sendiri
             $currentUser = Auth::user();
-            if ($currentUser && $currentUser->id == $user->id) {
+            if ($currentUser && $currentUser->id_user == $user->id_user) { // PERBAIKAN: id_user
                 return response()->json([
                     'success' => false,
                     'message' => 'You cannot delete your own account'
@@ -212,6 +217,48 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // TAMBAHKAN: Method untuk reset password atau ubah role
+    public function changeRole(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|in:admin,user',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
+        }
+
+        try {
+            $user = User::where('id_user', $id)->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $user->role = $request->role;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User role updated successfully',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user role',
                 'error' => $e->getMessage()
             ], 500);
         }

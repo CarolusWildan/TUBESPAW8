@@ -17,7 +17,7 @@ const FormLogin = () => {
 
     // Style Input Gelap
     const inputStyle = {
-        background: "rgba(0, 0, 0, 0.2)", // Gelap transparan
+        background: "rgba(0, 0, 0, 0.2)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         color: "white",
         padding: "12px 16px",
@@ -31,6 +31,7 @@ const FormLogin = () => {
             ...prev,
             [name]: value
         }));
+        setError(null); // Clear error on change
     };
 
     const handleSubmit = async (e) => {
@@ -54,20 +55,53 @@ const FormLogin = () => {
         try {
             const response = await axios.post(API_LOGIN_URL, formData);
             
-            const token = response.data.token;
-            const userData = response.data.detail; 
+            console.log("Full response:", response.data); // Debug log
             
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('user', JSON.stringify(userData)); 
-            localStorage.setItem('login_time', new Date().toISOString()); 
+            // PERBAIKAN: Gunakan response.data.user, bukan response.data.detail
+            if (response.data.success) {
+                const token = response.data.token;
+                const userData = response.data.user; // PERBAIKAN: user bukan detail
+                
+                console.log("User data from API:", userData); // Debug
+                console.log("User role:", userData.role); // Debug
+                
+                localStorage.setItem('auth_token', token);
+                
+                // Simpan dengan format yang konsisten
+                const userToStore = {
+                    id_user: userData.id_user,
+                    id: userData.id_user, // Untuk kompatibilitas
+                    nama: userData.nama,
+                    email: userData.email,
+                    role: userData.role
+                };
+                
+                localStorage.setItem('user', JSON.stringify(userToStore));
+                localStorage.setItem('login_time', new Date().toISOString());
+                
+                // Set default axios header
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                toast.success("Login berhasil! Selamat Datang.");
+                
+                // Debug: cek apa yang tersimpan
+                const storedUser = JSON.parse(localStorage.getItem('user'));
+                console.log("Stored user in localStorage:", storedUser);
+                
+                // Redirect berdasarkan role
+                setTimeout(() => {
+                    if (userData.role === 'admin') {
+                        console.log("Redirecting to dashboard (admin)");
+                        navigate('/dashboard');
+                    } else {
+                        console.log("Redirecting to home (user)");
+                        navigate('/');
+                    }
+                }, 1000);
 
-            toast.success("Login berhasil! Selamat Datang.");
-            
-            setTimeout(() => {
-                navigate('/');
-            }, 1000);
+            } else {
+                throw new Error(response.data.message || 'Login gagal');
+            }
 
         } catch (err) {
             console.error("Login Gagal:", err.response ? err.response.data : err.message);
@@ -138,7 +172,7 @@ const FormLogin = () => {
                 style={{
                     background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
                     border: "none",
-                    borderRadius: "50px", // Rounded pill agar modern
+                    borderRadius: "50px",
                     fontSize: "16px",
                     boxShadow: "0 4px 15px rgba(37, 117, 252, 0.4)",
                     transition: "transform 0.2s"
@@ -174,13 +208,13 @@ const FormLogin = () => {
                 </span>
             </div>
 
-            {/* Register Link (Ghost Button Style) */}
+            {/* Register Link */}
             <div className="text-center">
                 <p className="mb-2" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>
                     Gak punya akun?
                 </p>
                 <Button
-                    variant="outline-light" // Menggunakan varian light agar terlihat di dark bg
+                    variant="outline-light"
                     className="w-100"
                     style={{
                         borderRadius: "50px",
@@ -196,7 +230,28 @@ const FormLogin = () => {
                 </Button>
             </div>
             
-            {/* CSS Helper untuk Input Focus & Autofill */}
+            {/* Demo Credentials Card */}
+            <div className="mt-4 p-3 rounded border border-secondary" 
+                 style={{ background: "rgba(0, 0, 0, 0.3)" }}>
+                <p className="mb-2 text-white-50 small">
+                    <i className="bi bi-info-circle me-1"></i>
+                    Demo credentials:
+                </p>
+                <div className="row small">
+                    <div className="col-6">
+                        <div className="text-white-50">Admin:</div>
+                        <div className="text-white">dinar@gmail.com</div>
+                        <div className="text-white-50">dinar1234</div>
+                    </div>
+                    <div className="col-6">
+                        <div className="text-white-50">User:</div>
+                        <div className="text-white">ezra2@gmail.com</div>
+                        <div className="text-white-50">password</div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* CSS Helper */}
             <style jsx>{`
                 .form-control:focus {
                     background: rgba(0, 0, 0, 0.4) !important;
@@ -204,7 +259,6 @@ const FormLogin = () => {
                     color: white !important;
                     box-shadow: 0 0 0 0.25rem rgba(167, 139, 250, 0.25);
                 }
-                /* Mengatasi warna background kuning saat autofill browser */
                 input:-webkit-autofill,
                 input:-webkit-autofill:hover, 
                 input:-webkit-autofill:focus, 
@@ -213,10 +267,9 @@ const FormLogin = () => {
                     -webkit-text-fill-color: white !important;
                     transition: background-color 5000s ease-in-out 0s;
                 }
-                /* Menargetkan placeholder pada semua input dan select di dalam form ini */
                 .form-control::placeholder {
-                    color: rgba(255, 255, 255, 0.6) !important; /* Ubah angka 0.6 untuk mengatur transparansi (1.0 = Putih Solid) */
-                    opacity: 1; /* Diperlukan untuk Firefox */
+                    color: rgba(255, 255, 255, 0.6) !important;
+                    opacity: 1;
                 }
             `}</style>
         </Form>
