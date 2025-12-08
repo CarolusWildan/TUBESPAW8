@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
@@ -9,7 +9,8 @@ import FilmPage from "../pages/FilmPage";
 import KelolaFilmPage from "../pages/KelolaFilmPage";
 import KelolaStudioPage from "../pages/KelolaStudioPage";
 import KelolaJadwalPage from "../pages/KelolaJadwalPage";
-import "bootstrap/dist/css/bootstrap.min.css";
+import PesanTiketPage from "../pages/PesanTiketPage";
+import PilihJadwalPage from "../pages/PilihJadwalPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -23,14 +24,23 @@ const ProtectedRoute = ({ children }) => {
 // Admin Route Component
 const AdminRoute = ({ children }) => {
     const token = localStorage.getItem('auth_token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const userString = localStorage.getItem('user');
+    const user = userString ? JSON.parse(userString) : null;
     
     if (!token) {
         return <Navigate to="/login" replace />;
     }
     
     if (user?.role !== 'admin') {
-        return <div className="text-center mt-5"><h4>🚫 Akses Ditolak - Hanya Admin</h4></div>;
+        return (
+            <div className="vh-100 d-flex justify-content-center align-items-center text-white" style={{background: "#0f0f1a"}}>
+                <div className="text-center">
+                    <h1 className="display-1 fw-bold">403</h1>
+                    <h4>🚫 Akses Ditolak</h4>
+                    <p>Hanya admin yang diizinkan mengakses halaman ini.</p>
+                </div>
+            </div>
+        );
     }
     
     return children;
@@ -39,59 +49,34 @@ const AdminRoute = ({ children }) => {
 const router = createBrowserRouter([
     {
         path: "*",
-        element: <div>Routes Not Found!</div>,
+        element: <div className="text-white text-center mt-5">404 - Routes Not Found</div>,
     },
     {
         element: <MainLayout />,
         children: [
-            {
-                path: "/",
-                element: <HomePage />,
-            },
-            {
-                path: "/login",
-                element: <LoginPage />,
+            { path: "/", element: <HomePage /> },
+            { path: "/login", element: <LoginPage /> },
+            { path: "/register", element: <RegisterPage /> },
+            { 
+                path: "/dashboard", 
+                element: <ProtectedRoute><DashboardPage /></ProtectedRoute> 
             },
             { 
-                path: "/register", 
-                element: <RegisterPage />,
+                path: "/movies", 
+                element: <FilmPage /> 
             },
             {
-                path: "/dashboard",
-                element: (
-                    <ProtectedRoute>
-                        <DashboardPage />
-                    </ProtectedRoute>
-                ),
+                path: "/select-schedule",
+                element: <ProtectedRoute><PilihJadwalPage /></ProtectedRoute>
             },
             {
-                path: "/movies",
-                element: <FilmPage />,
+                path: "/book-ticket", 
+                element: <ProtectedRoute><PesanTiketPage /></ProtectedRoute>
             },
-            {
-                path: "/kelola-film",
-                element: (
-                    <AdminRoute>
-                        <KelolaFilmPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/kelola-studio",
-                element: (
-                    <AdminRoute>
-                        <KelolaStudioPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/kelola-jadwal",
-                element: (
-                    <AdminRoute>
-                        <KelolaJadwalPage />
-                    </AdminRoute>
-                ),
-            },
+            // === ADMIN ===
+            { path: "/kelola-film", element: <AdminRoute><KelolaFilmPage /></AdminRoute> },
+            { path: "/kelola-studio", element: <AdminRoute><KelolaStudioPage /></AdminRoute> },
+            { path: "/kelola-jadwal", element: <AdminRoute><KelolaJadwalPage /></AdminRoute> },
         ],
     },
 ]);

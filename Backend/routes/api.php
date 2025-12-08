@@ -22,7 +22,7 @@ Route::middleware('auth:api')->group(function () {
 
     // Route::get('/films', [FilmController::class, 'index']);
     Route::post('/films/create', [FilmController::class, 'create']);
-    Route::post('/films/update/{id}', [FilmController::class, 'update']);
+    Route::put('/films/update/{id}', [FilmController::class, 'update']);
     Route::delete('/films/delete/{id}', [FilmController::class, 'delete']);
 
     Route::get('/studio', [StudioController::class, 'index']);

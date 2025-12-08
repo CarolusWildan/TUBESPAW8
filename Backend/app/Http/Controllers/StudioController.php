@@ -19,6 +19,7 @@ class StudioController extends Controller
         $validator = Validator::make($request->all(), [
             'nomor_studio' => 'required|integer|min:1|unique:studio,nomor_studio',
             'kapasitas' => 'required|integer|min:1|max:500',
+            'tipe' => 'required|string|in:reguler,imax,screenx',
         ]);
 
         if ($validator->fails()) {
@@ -30,6 +31,7 @@ class StudioController extends Controller
         $studio = Studio::create([
             'nomor_studio' => $request->nomor_studio,
             'kapasitas' => $request->kapasitas,
+            'tipe' => $request->tipe, // TAMBAHAN: Simpan tipe ke DB
         ]);
 
         return response()->json([
@@ -49,7 +51,8 @@ class StudioController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nomor_studio' => 'required|integer|min:1|unique:studio,nomor_studio,'.$studio->id_studio.',id_studio',
-            'kapasitas' => 'required|integer|min:1|max:500'
+            'kapasitas' => 'required|integer|min:1|max:500',
+            'tipe' => 'required|string|in:reguler,imax,screenx',
         ]);
 
         if ($validator->fails()) {
@@ -61,10 +64,11 @@ class StudioController extends Controller
         $studio->update([
             'nomor_studio' => $request->nomor_studio,
             'kapasitas' => $request->kapasitas,
+            'tipe' => $request->tipe, // TAMBAHAN: Update tipe
         ]);
         
         return response()->json([
-            'message' => 'Film updated successfully',
+            'message' => 'Studio updated successfully',
             'studio' => $studio
         ]);
     }

@@ -55,7 +55,6 @@ class FilmController extends Controller
 
     public function update(Request $request, string $id)
     {
-        // PERBAIKAN: Cari film berdasarkan id_film (karena primary key adalah id_film)
         $film = Film::where('id_film', $id)->first();
 
         if (!$film) {
@@ -67,9 +66,10 @@ class FilmController extends Controller
             'genre' => 'required|string|max:255',
             'durasi_film' => 'required|date_format:H:i:s',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'status' => 'required|in:coming soon,showing',
-            'cover_path' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'end_date' => 'nullable|date|after_or_equal:start_date', // nullable
+            'status' => 'required|in:coming soon,showing,ended',
+            // PERBAIKAN KRUSIAL: Ubah 'required' menjadi 'nullable'
+            'cover_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -78,21 +78,33 @@ class FilmController extends Controller
             ], 422);
         }
 
-        if ($request->hasFile('cover_path')) {
-            $coverFile = $request->file('cover_path');
-            $coverPath = $coverFile->store('covers', 'public');
-            $film->cover_path = $coverPath;
-        }
-
-        $film->update([
+        // Siapkan data update dasar
+        $updateData = [
             'judul' => $request->judul,
             'genre' => $request->genre,
             'durasi_film' => $request->durasi_film,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'status' => $request->status,
-            'cover_path' => $request->cover_path,
-        ]);
+        ];
+
+        // Cek apakah user mengupload gambar BARU
+        if ($request->hasFile('cover_path')) {
+            // Hapus gambar lama agar storage tidak penuh (Praktik Terbaik)
+            if ($film->cover_path && Storage::disk('public')->exists($film->cover_path)) {
+                Storage::disk('public')->delete($film->cover_path);
+            }
+
+            // Simpan gambar baru
+            $coverFile = $request->file('cover_path');
+            $coverPath = $coverFile->store('covers', 'public');
+
+            // Masukkan path baru ke array update
+            $updateData['cover_path'] = $coverPath;
+        }
+
+        // Lakukan update
+        $film->update($updateData);
 
         return response()->json([
             'message' => 'Film updated successfully',
