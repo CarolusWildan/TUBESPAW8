@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"; // Tambahkan Navigate
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
@@ -10,7 +10,7 @@ import KelolaFilmPage from "../pages/KelolaFilmPage";
 import KelolaStudioPage from "../pages/KelolaStudioPage";
 import KelolaJadwalPage from "../pages/KelolaJadwalPage";
 import PesanTiketPage from "../pages/PesanTiketPage";
-import "bootstrap/dist/css/bootstrap.min.css";
+import PilihJadwalPage from "../pages/PilihJadwalPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -49,70 +49,34 @@ const AdminRoute = ({ children }) => {
 const router = createBrowserRouter([
     {
         path: "*",
-        element: <div>Routes Not Found!</div>,
+        element: <div className="text-white text-center mt-5">404 - Routes Not Found</div>,
     },
     {
         element: <MainLayout />,
         children: [
-            {
-                path: "/",
-                element: <HomePage />,
-            },
-            {
-                path: "/login",
-                element: <LoginPage />,
+            { path: "/", element: <HomePage /> },
+            { path: "/login", element: <LoginPage /> },
+            { path: "/register", element: <RegisterPage /> },
+            { 
+                path: "/dashboard", 
+                element: <ProtectedRoute><DashboardPage /></ProtectedRoute> 
             },
             { 
-                path: "/register", 
-                element: <RegisterPage />,
+                path: "/movies", 
+                element: <FilmPage /> 
             },
             {
-                path: "/dashboard",
-                element: (
-                    <ProtectedRoute>
-                        <DashboardPage />
-                    </ProtectedRoute>
-                ),
+                path: "/select-schedule",
+                element: <ProtectedRoute><PilihJadwalPage /></ProtectedRoute>
             },
-            {
-                path: "/movies",
-                element: <FilmPage />,
-            },
-            // === TAMBAHAN PENTING DI SINI ===
             {
                 path: "/book-ticket", 
-                element: (
-                    // Menggunakan ProtectedRoute agar user harus login sebelum beli tiket
-                    <ProtectedRoute>
-                        <PesanTiketPage />
-                    </ProtectedRoute>
-                ),
+                element: <ProtectedRoute><PesanTiketPage /></ProtectedRoute>
             },
-            // =================================
-            {
-                path: "/kelola-film",
-                element: (
-                    <AdminRoute>
-                        <KelolaFilmPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/kelola-studio",
-                element: (
-                    <AdminRoute>
-                        <KelolaStudioPage />
-                    </AdminRoute>
-                ),
-            },
-            {
-                path: "/kelola-jadwal",
-                element: (
-                    <AdminRoute>
-                        <KelolaJadwalPage />
-                    </AdminRoute>
-                ),
-            },
+            // === ADMIN ===
+            { path: "/kelola-film", element: <AdminRoute><KelolaFilmPage /></AdminRoute> },
+            { path: "/kelola-studio", element: <AdminRoute><KelolaStudioPage /></AdminRoute> },
+            { path: "/kelola-jadwal", element: <AdminRoute><KelolaJadwalPage /></AdminRoute> },
         ],
     },
 ]);
