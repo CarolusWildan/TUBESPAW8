@@ -15,11 +15,8 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
         jam_tayang: ""
     });
     
-    // Filtered studios based on selected film's duration
-    const [availableStudios, setAvailableStudios] = useState(studios);
-    
-    // Film duration for end time calculation
-    const [selectedFilmDuration, setSelectedFilmDuration] = useState(0);
+    // Selected film details
+    const [selectedFilmDetails, setSelectedFilmDetails] = useState(null);
     
     // Calculate end time
     const [endTime, setEndTime] = useState("");
@@ -29,59 +26,54 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
 
     // Initialize form data
     useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        
         if (mode === "edit" && jadwalData) {
             setFormData({
                 id_film: jadwalData.id_film || "",
                 id_studio: jadwalData.id_studio || "",
-                tanggal_tayang: jadwalData.tanggal_tayang ? new Date(jadwalData.tanggal_tayang).toISOString().split('T')[0] : "",
+                tanggal_tayang: jadwalData.tanggal_tayang ? new Date(jadwalData.tanggal_tayang).toISOString().split('T')[0] : today,
                 jam_tayang: jadwalData.jam_tayang || ""
             });
             
-            // Set film duration
-            if (jadwalData.id_film) {
+            // Set film details
+            if (jadwalData.id_film && films.length > 0) {
                 const film = films.find(f => f.id_film === jadwalData.id_film);
                 if (film) {
-                    setSelectedFilmDuration(film.durasi || 0);
+                    setSelectedFilmDetails(film);
                     calculateEndTime(jadwalData.jam_tayang, film.durasi);
                 }
             }
         } else {
             // Reset form for create mode
-            const today = new Date().toISOString().split('T')[0];
             setFormData({
                 id_film: "",
                 id_studio: "",
                 tanggal_tayang: today,
                 jam_tayang: ""
             });
+            setSelectedFilmDetails(null);
         }
     }, [mode, jadwalData, films]);
 
-    // Update available studios when film changes
+    // Update film details when film selection changes
     useEffect(() => {
-        if (formData.id_film) {
+        if (formData.id_film && films.length > 0) {
             const film = films.find(f => f.id_film.toString() === formData.id_film.toString());
-            if (film) {
-                setSelectedFilmDuration(film.durasi || 0);
-                // Filter studios based on film requirements if needed
-                setAvailableStudios(studios);
-                calculateEndTime(formData.jam_tayang, film.durasi);
-            }
+            setSelectedFilmDetails(film || null);
         } else {
-            setAvailableStudios(studios);
-            setSelectedFilmDuration(0);
-            setEndTime("");
+            setSelectedFilmDetails(null);
         }
-    }, [formData.id_film, films, studios]);
+    }, [formData.id_film, films]);
 
-    // Update end time when start time changes
+    // Update end time when start time or film duration changes
     useEffect(() => {
-        if (formData.jam_tayang && selectedFilmDuration > 0) {
-            calculateEndTime(formData.jam_tayang, selectedFilmDuration);
+        if (formData.jam_tayang && selectedFilmDetails?.durasi) {
+            calculateEndTime(formData.jam_tayang, selectedFilmDetails.durasi);
         } else {
             setEndTime("");
         }
-    }, [formData.jam_tayang, selectedFilmDuration]);
+    }, [formData.jam_tayang, selectedFilmDetails]);
 
     // Calculate end time
     const calculateEndTime = (startTime, durationMinutes) => {
@@ -97,6 +89,7 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
             const endHours = Math.floor(totalMinutes / 60) % 24;
             const endMinutes = totalMinutes % 60;
             
+            // Format 24 jam (tanpa AM/PM)
             setEndTime(`${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`);
         } catch {
             setEndTime("");
@@ -108,22 +101,17 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
         return new Date().toISOString().split('T')[0];
     };
 
-    // Get film title by id
-    const getFilmTitle = (idFilm) => {
-        const film = films.find(f => f.id_film.toString() === idFilm.toString());
-        return film?.judul_film || "Pilih Film";
-    };
-
-    // Get studio number by id
-    const getStudioNumber = (idStudio) => {
-        const studio = studios.find(s => s.id_studio.toString() === idStudio.toString());
-        return studio?.nomor_studio || "Pilih Studio";
-    };
-
-    // Get film duration by id
-    const getFilmDuration = (idFilm) => {
-        const film = films.find(f => f.id_film.toString() === idFilm.toString());
-        return film?.durasi || 0;
+    // Generate time options (08:00 - 23:45 dengan interval 15 menit)
+    const generateTimeOptions = () => {
+        const times = [];
+        for (let hour = 8; hour <= 23; hour++) {
+            for (let minute = 0; minute < 60; minute += 15) {
+                if (hour === 23 && minute > 45) break;
+                const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                times.push(timeString);
+            }
+        }
+        return times;
     };
 
     // Handle form input changes
@@ -163,14 +151,6 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
             }
         }
         
-        // Time validation
-        if (formData.jam_tayang) {
-            const [hours, minutes] = formData.jam_tayang.split(':').map(Number);
-            if (hours < 8 || hours > 23) {
-                newErrors.jam_tayang = "Jam tayang harus antara 08:00 - 23:59";
-            }
-        }
-        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -202,6 +182,8 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                 jam_tayang: formData.jam_tayang
             };
             
+            console.log("Submitting jadwal data:", submitData);
+            
             let response;
             
             if (mode === "create") {
@@ -210,6 +192,8 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                 const jadwalId = jadwalData.id_jadwal || jadwalData.id;
                 response = await axios.post(`http://localhost:8000/api/jadwal/update/${jadwalId}`, submitData, { headers });
             }
+            
+            console.log("Response from API:", response.data);
             
             if (response.data.status === "success") {
                 toast.success(response.data.message || "Jadwal berhasil disimpan");
@@ -246,6 +230,21 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
         }
     };
 
+    // Format date for display
+    const formatDisplayDate = (dateString) => {
+        if (!dateString) return "";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch {
+            return dateString;
+        }
+    };
+
     return (
         <Form onSubmit={handleSubmit}>
             {error && (
@@ -255,7 +254,7 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                 </Alert>
             )}
             
-            {/* Film Selection */}
+            {/* Film Selection - DIPERBAIKI LAGI */}
             <Form.Group className="mb-3">
                 <Form.Label className="fw-semibold">
                     <i className="bi bi-film me-1 text-primary"></i> Pilih Film
@@ -266,23 +265,53 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                     onChange={handleInputChange}
                     isInvalid={!!errors.id_film}
                     required
-                    disabled={loading}
+                    disabled={loading || films.length === 0}
                 >
                     <option value="">-- Pilih Film --</option>
-                    {films.map((film) => (
-                        <option key={film.id_film} value={film.id_film}>
-                            {film.judul_film} ({film.genre}) - {film.durasi} menit
-                        </option>
-                    ))}
+                    {films.length === 0 ? (
+                        <option value="" disabled>Memuat film...</option>
+                    ) : (
+                        films.map((film) => {
+                            // Pastikan ada judul film
+                            const judulFilm = film.judul || film.title || `Film ID: ${film.id_film}`;
+                            const genre = film.genre || "Unknown";
+                            const durasi = film.durasi || film.duration || 0;
+                            
+                            return (
+                                <option key={film.id_film} value={film.id_film}>
+                                    {judulFilm} ({genre}) - {durasi} menit
+                                </option>
+                            );
+                        })
+                    )}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
                     {errors.id_film}
                 </Form.Control.Feedback>
-                {formData.id_film && (
-                    <div className="mt-2 p-2 bg-light rounded small">
-                        <div className="d-flex justify-content-between">
-                            <span className="text-muted">Durasi Film:</span>
-                            <span className="fw-medium">{getFilmDuration(formData.id_film)} menit</span>
+                
+                {/* Film Details */}
+                {selectedFilmDetails && (
+                    <div className="mt-2 p-3 bg-light rounded border">
+                        <h6 className="fw-bold mb-2">Detail Film</h6>
+                        <div className="row small">
+                            <div className="col-6">
+                                <div className="mb-1">
+                                    <span className="text-muted">Judul:</span>
+                                    <div className="fw-medium">{selectedFilmDetails.judul}</div>
+                                </div>
+                            </div>
+                            <div className="col-3">
+                                <div className="mb-1">
+                                    <span className="text-muted">Genre:</span>
+                                    <div>{selectedFilmDetails.genre}</div>
+                                </div>
+                            </div>
+                            <div className="col-3">
+                                <div className="mb-1">
+                                    <span className="text-muted">Durasi:</span>
+                                    <div className="fw-medium">{selectedFilmDetails.durasi} menit</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -299,14 +328,18 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                     onChange={handleInputChange}
                     isInvalid={!!errors.id_studio}
                     required
-                    disabled={loading}
+                    disabled={loading || studios.length === 0}
                 >
                     <option value="">-- Pilih Studio --</option>
-                    {availableStudios.map((studio) => (
-                        <option key={studio.id_studio} value={studio.id_studio}>
-                            Studio {studio.nomor_studio} ({studio.kapasitas} kursi)
-                        </option>
-                    ))}
+                    {studios.length === 0 ? (
+                        <option value="" disabled>Memuat studio...</option>
+                    ) : (
+                        studios.map((studio) => (
+                            <option key={studio.id_studio} value={studio.id_studio}>
+                                Studio {studio.nomor_studio} ({studio.kapasitas} kursi)
+                            </option>
+                        ))
+                    )}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
                     {errors.id_studio}
@@ -333,79 +366,120 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                         <Form.Control.Feedback type="invalid">
                             {errors.tanggal_tayang}
                         </Form.Control.Feedback>
+                        {formData.tanggal_tayang && (
+                            <div className="mt-1 text-muted small">
+                                <i className="bi bi-calendar-check me-1"></i>
+                                {formatDisplayDate(formData.tanggal_tayang)}
+                            </div>
+                        )}
                     </Form.Group>
                 </Col>
                 
                 <Col md={6}>
                     <Form.Group>
                         <Form.Label className="fw-semibold">
-                            <i className="bi bi-clock me-1 text-primary"></i> Jam Tayang
+                            <i className="bi bi-clock me-1 text-primary"></i> Jam Tayang (24 Jam)
                         </Form.Label>
-                        <InputGroup>
-                            <Form.Control
-                                type="time"
-                                name="jam_tayang"
-                                value={formData.jam_tayang}
-                                onChange={handleInputChange}
-                                isInvalid={!!errors.jam_tayang}
-                                required
-                                disabled={loading}
-                            />
-                            {endTime && (
-                                <InputGroup.Text className="bg-light">
-                                    <small className="text-muted">
-                                        s/d <span className="fw-medium">{endTime}</span>
-                                    </small>
-                                </InputGroup.Text>
-                            )}
-                        </InputGroup>
+                        <Form.Select
+                            name="jam_tayang"
+                            value={formData.jam_tayang}
+                            onChange={handleInputChange}
+                            isInvalid={!!errors.jam_tayang}
+                            required
+                            disabled={loading}
+                        >
+                            <option value="">-- Pilih Jam --</option>
+                            {generateTimeOptions().map((time) => (
+                                <option key={time} value={time}>
+                                    {time}
+                                </option>
+                            ))}
+                        </Form.Select>
                         <Form.Control.Feedback type="invalid">
                             {errors.jam_tayang}
                         </Form.Control.Feedback>
-                        <Form.Text className="text-muted">
-                            Jam operasional: 08:00 - 23:59
-                        </Form.Text>
+                        
+                        {/* Time Info */}
+                        <div className="mt-2">
+                            {formData.jam_tayang && selectedFilmDetails?.durasi && endTime && (
+                                <div className="p-2 bg-light rounded small">
+                                    <div className="d-flex justify-content-between">
+                                        <span className="text-muted">Mulai:</span>
+                                        <span className="fw-medium">{formData.jam_tayang}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between">
+                                        <span className="text-muted">Selesai:</span>
+                                        <span className="fw-medium">{endTime}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between">
+                                        <span className="text-muted">Durasi:</span>
+                                        <span>{selectedFilmDetails.durasi} menit</span>
+                                    </div>
+                                </div>
+                            )}
+                            <Form.Text className="text-muted d-block mt-1">
+                                <i className="bi bi-info-circle me-1"></i>
+                                Jam operasional: 08:00 - 23:59
+                            </Form.Text>
+                        </div>
                     </Form.Group>
                 </Col>
             </Row>
             
             {/* Summary Card */}
-            {(formData.id_film && formData.id_studio && formData.jam_tayang) && (
-                <div className="mb-4 p-3 bg-light rounded border">
-                    <h6 className="fw-bold mb-2">
-                        <i className="bi bi-info-circle me-1 text-primary"></i> Ringkasan Jadwal
+            {(formData.id_film && formData.id_studio && formData.tanggal_tayang && formData.jam_tayang) && (
+                <div className="mb-4 p-3 bg-info bg-opacity-10 rounded border border-info">
+                    <h6 className="fw-bold mb-2 text-info">
+                        <i className="bi bi-clipboard-check me-1"></i> Ringkasan Jadwal
                     </h6>
                     <div className="row small">
                         <div className="col-6">
                             <div className="mb-2">
                                 <span className="text-muted">Film:</span>
-                                <div className="fw-medium">{getFilmTitle(formData.id_film)}</div>
+                                <div className="fw-medium">{selectedFilmDetails?.judul}</div>
+                                <div className="text-muted small">
+                                    <i className="bi bi-tag me-1"></i>
+                                    {selectedFilmDetails?.genre} • {selectedFilmDetails?.durasi} menit
+                                </div>
                             </div>
                             <div className="mb-2">
                                 <span className="text-muted">Studio:</span>
-                                <div className="fw-medium">Studio {getStudioNumber(formData.id_studio)}</div>
+                                <div className="fw-medium">
+                                    Studio {studios.find(s => s.id_studio.toString() === formData.id_studio.toString())?.nomor_studio}
+                                </div>
+                                <div className="text-muted small">
+                                    <i className="bi bi-people me-1"></i>
+                                    {studios.find(s => s.id_studio.toString() === formData.id_studio.toString())?.kapasitas} kursi
+                                </div>
                             </div>
                         </div>
                         <div className="col-6">
                             <div className="mb-2">
                                 <span className="text-muted">Tanggal:</span>
                                 <div className="fw-medium">
-                                    {new Date(formData.tanggal_tayang).toLocaleDateString('id-ID', {
-                                        weekday: 'long',
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric'
-                                    })}
+                                    <i className="bi bi-calendar3 me-1"></i>
+                                    {formatDisplayDate(formData.tanggal_tayang)}
                                 </div>
                             </div>
                             <div className="mb-2">
                                 <span className="text-muted">Waktu:</span>
                                 <div className="fw-medium">
-                                    {formData.jam_tayang} - {endTime} ({selectedFilmDuration} menit)
+                                    <i className="bi bi-clock me-1"></i>
+                                    {formData.jam_tayang} - {endTime}
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+            
+            {/* Debug Info (Hapus di production) */}
+            {process.env.NODE_ENV === 'development' && (
+                <div className="mb-3 p-2 bg-dark text-white rounded small">
+                    <div className="fw-bold mb-1">Debug Info:</div>
+                    <div>Selected Film ID: {formData.id_film || "none"}</div>
+                    <div>Films Count: {films.length}</div>
+                    <div>First Film: {films[0]?.judul || "none"}</div>
                 </div>
             )}
             

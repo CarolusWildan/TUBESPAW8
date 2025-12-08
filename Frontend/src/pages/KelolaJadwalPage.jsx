@@ -146,7 +146,7 @@ const KelolaJadwalPage = () => {
         const findFilm = films.find(f => f.id_film === item.id_film);
         const findStudio = studios.find(s => s.id_studio === item.id_studio);
         
-        const filmTitle = findFilm?.judul_film?.toLowerCase() || "";
+        const filmTitle = findFilm?.judul?.toLowerCase() || "";
         const studioNumber = findStudio?.nomor_studio?.toString() || "";
         const genre = findFilm?.genre?.toLowerCase() || "";
         
@@ -178,7 +178,7 @@ const KelolaJadwalPage = () => {
     // Get film title by id
     const getFilmTitle = (idFilm) => {
         const film = films.find(f => f.id_film === idFilm);
-        return film?.judul_film || "Film tidak ditemukan";
+        return film?.judul || "Film tidak ditemukan";
     };
 
     // Get studio number by id
