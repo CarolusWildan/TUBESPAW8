@@ -11,7 +11,8 @@ const FormKelolaStudio = ({
 }) => {
   const [formData, setFormData] = useState({
     nomor_studio: "",
-    kapasitas: ""
+    kapasitas: "",
+    tipe: "" // TAMBAHAN: State untuk tipe studio
   });
   
   const [error, setError] = useState(null);
@@ -27,7 +28,8 @@ const FormKelolaStudio = ({
     if (mode === 'edit' && studioData) {
       setFormData({
         nomor_studio: studioData.nomor_studio || "",
-        kapasitas: studioData.kapasitas || ""
+        kapasitas: studioData.kapasitas || "",
+        tipe: studioData.tipe || "" // TAMBAHAN: Load tipe saat edit
       });
     }
   }, [mode, studioData]);
@@ -60,6 +62,11 @@ const FormKelolaStudio = ({
     } else if (formData.kapasitas > 500) {
       errors.kapasitas = "Kapasitas maksimal 500 kursi";
     }
+
+    // TAMBAHAN: Validasi tipe
+    if (!formData.tipe) {
+        errors.tipe = "Tipe studio harus dipilih";
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -82,9 +89,11 @@ const FormKelolaStudio = ({
         throw new Error("Token tidak ditemukan. Silakan login ulang.");
       }
 
+      // TAMBAHAN: Sertakan tipe dalam request
       const requestData = {
         nomor_studio: parseInt(formData.nomor_studio),
-        kapasitas: parseInt(formData.kapasitas)
+        kapasitas: parseInt(formData.kapasitas),
+        tipe: formData.tipe 
       };
 
       let response;
@@ -102,7 +111,8 @@ const FormKelolaStudio = ({
         // Reset form untuk create mode
         setFormData({
           nomor_studio: "",
-          kapasitas: ""
+          kapasitas: "",
+          tipe: ""
         });
         
       } else if (mode === 'edit' && studioData) {
@@ -116,12 +126,10 @@ const FormKelolaStudio = ({
         toast.success("Studio berhasil diperbarui!");
       }
 
-      // Panggil callback sukses
       if (onSuccess) {
         onSuccess(response?.data);
       }
 
-      // Tutup modal setelah 500ms
       setTimeout(() => {
         if (onClose) onClose();
       }, 500);
@@ -132,7 +140,6 @@ const FormKelolaStudio = ({
       let errorMessage = `Gagal ${mode === 'create' ? 'menambah' : 'memperbarui'} studio. `;
       
       if (err.response?.status === 422 && err.response.data?.errors) {
-        // Validation errors dari server
         const serverErrors = err.response.data.errors;
         Object.keys(serverErrors).forEach(key => {
           setValidationErrors(prev => ({
@@ -155,14 +162,12 @@ const FormKelolaStudio = ({
     }
   };
 
-  // Fungsi untuk batal
   const handleCancel = () => {
     if (onClose) onClose();
   };
 
   return (
     <Form onSubmit={handleSubmit}>
-      {/* Error Message */}
       {error && (
         <Alert variant="danger" className="mb-3 py-2">
           <small>{error}</small>
@@ -171,7 +176,7 @@ const FormKelolaStudio = ({
 
       <Row>
         {/* Nomor Studio */}
-        <Col md={6}>
+        <Col md={12}>
           <Form.Group className="mb-3">
             <Form.Label className="fw-semibold">
               Nomor Studio *
@@ -191,16 +196,34 @@ const FormKelolaStudio = ({
                 disabled={isSubmitting}
                 isInvalid={!!validationErrors.nomor_studio}
               />
-            </InputGroup>
-            {validationErrors.nomor_studio && (
               <Form.Control.Feedback type="invalid">
                 {validationErrors.nomor_studio}
               </Form.Control.Feedback>
-            )}
-            <Form.Text className="text-muted">
-              Nomor unik untuk identifikasi studio
-            </Form.Text>
+            </InputGroup>
           </Form.Group>
+        </Col>
+
+        {/* Tipe Studio (TAMBAHAN) */}
+        <Col md={6}>
+            <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Tipe Studio *</Form.Label>
+                <Form.Select
+                    name="tipe"
+                    value={formData.tipe}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                    isInvalid={!!validationErrors.tipe}
+                >
+                    <option value="">Pilih Tipe</option>
+                    <option value="reguler">Reguler</option>
+                    <option value="imax">IMAX</option>
+                    <option value="screenx">ScreenX</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                    {validationErrors.tipe}
+                </Form.Control.Feedback>
+            </Form.Group>
         </Col>
 
         {/* Kapasitas */}
@@ -225,35 +248,14 @@ const FormKelolaStudio = ({
                 disabled={isSubmitting}
                 isInvalid={!!validationErrors.kapasitas}
               />
-            </InputGroup>
-            {validationErrors.kapasitas && (
               <Form.Control.Feedback type="invalid">
                 {validationErrors.kapasitas}
               </Form.Control.Feedback>
-            )}
-            <Form.Text className="text-muted">
-              Jumlah kursi (1-500)
-            </Form.Text>
+            </InputGroup>
           </Form.Group>
         </Col>
       </Row>
 
-      {/* Info Card */}
-      <Alert variant="info" className="py-2 mb-3">
-        <div className="d-flex">
-          <i className="bi bi-info-circle-fill me-2 mt-1"></i>
-          <div>
-            <small>
-              <strong>Informasi:</strong><br/>
-              • Nomor studio harus unik<br/>
-              • Kapasitas maksimal 500 kursi per studio<br/>
-              • Studio dapat digunakan untuk penjadwalan film
-            </small>
-          </div>
-        </div>
-      </Alert>
-
-      {/* Submit Buttons */}
       <div className="d-flex gap-3 justify-content-end mt-4">
         <Button
           variant="outline-secondary"

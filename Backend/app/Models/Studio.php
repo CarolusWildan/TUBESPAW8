@@ -14,6 +14,7 @@ class Studio extends Model
     protected $fillable = [
         'nomor_studio',
         'kapasitas',
+        'tipe',
     ];
 
     public function kursi()
