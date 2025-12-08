@@ -18,6 +18,7 @@ class Film extends Model
         'start_date',
         'end_date',
         'status',
+        'cover_path',
     ];
 
     public function jadwal()
