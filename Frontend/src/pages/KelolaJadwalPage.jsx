@@ -661,13 +661,22 @@ const KelolaJadwalPage = () => {
                                                 <td>
                                                     <div className="d-flex justify-content-center gap-1">
                                                         <Button
+                                                            variant="outline-info"
+                                                            size="sm"
+                                                            onClick={() => handleViewDetails(item)}
+                                                            title="Detail Jadwal"
+                                                            className="px-3 py-1"
+                                                        >
+                                                            <i className="bi bi-eye"></i> Detail
+                                                        </Button>
+                                                        <Button
                                                             variant="outline-primary"
                                                             size="sm"
                                                             onClick={() => handleOpenEditModal(item)}
                                                             title="Edit Jadwal"
                                                             className="px-3 py-1"
                                                         >
-                                                            <i className="bi bi-pencil"></i>
+                                                            <i className="bi bi-pencil"></i> Edit
                                                         </Button>
                                                         <Button
                                                             variant="outline-danger"
@@ -676,16 +685,7 @@ const KelolaJadwalPage = () => {
                                                             title="Hapus Jadwal"
                                                             className="px-3 py-1"
                                                         >
-                                                            <i className="bi bi-trash"></i>
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline-info"
-                                                            size="sm"
-                                                            onClick={() => handleViewDetails(item)}
-                                                            title="Detail Jadwal"
-                                                            className="px-3 py-1"
-                                                        >
-                                                            <i className="bi bi-eye"></i>
+                                                            <i className="bi bi-trash"></i> Delete
                                                         </Button>
                                                     </div>
                                                 </td>

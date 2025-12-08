@@ -464,7 +464,7 @@ const KelolaStudioPage = () => {
                                                         title="Detail"
                                                         className="px-3"
                                                     >
-                                                        <i className="bi bi-eye"></i>
+                                                        <i className="bi bi-eye"></i> Detail
                                                     </Button>
                                                     
                                                     {/* Button Edit */}
@@ -475,7 +475,7 @@ const KelolaStudioPage = () => {
                                                         title="Edit"
                                                         className="px-3"
                                                     >
-                                                        <i className="bi bi-pencil"></i>
+                                                        <i className="bi bi-pencil"></i> Edit
                                                     </Button>
                                                     
                                                     {/* Button Delete */}
@@ -486,7 +486,7 @@ const KelolaStudioPage = () => {
                                                         title="Hapus"
                                                         className="px-3"
                                                     >
-                                                        <i className="bi bi-trash"></i>
+                                                        <i className="bi bi-trash"></i> Delete
                                                     </Button>
                                                 </div>
                                             </td>

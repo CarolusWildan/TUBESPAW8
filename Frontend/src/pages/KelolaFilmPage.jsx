@@ -563,7 +563,7 @@ const KelolaFilmPage = () => {
                                                         title="Detail"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-eye"></i>
+                                                        <i className="bi bi-eye"></i> Detail
                                                     </Button>
                                                     
                                                     {/* Button Edit */}
@@ -574,7 +574,7 @@ const KelolaFilmPage = () => {
                                                         title="Edit"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-pencil"></i>
+                                                        <i className="bi bi-pencil"></i> Edit
                                                     </Button>
                                                     
                                                     {/* Button Delete */}
@@ -585,7 +585,7 @@ const KelolaFilmPage = () => {
                                                         title="Hapus"
                                                         className="px-2 py-1"
                                                     >
-                                                        <i className="bi bi-trash"></i>
+                                                        <i className="bi bi-trash"></i> Delete
                                                     </Button>
                                                 </div>
                                             </td>
