@@ -8,7 +8,7 @@ const FormRegister = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         nama: "",
-        email: "", 
+        email: "",
         password: "",
         role: "user"
     });
@@ -16,6 +16,16 @@ const FormRegister = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const API_REGISTER_URL = 'http://localhost:8000/api/register';
+
+    // Style Input Gelap (Konsisten dengan Login)
+    const inputStyle = {
+        background: "rgba(0, 0, 0, 0.2)", // Gelap transparan
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        color: "white",
+        padding: "12px 16px",
+        borderRadius: "12px",
+        fontSize: "0.95rem"
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,28 +64,21 @@ const FormRegister = () => {
 
         try {
             console.log("📤 Data yang dikirim ke backend:", formData);
-            console.log("🔗 Endpoint:", API_REGISTER_URL);
-            
+
             const response = await axios.post(API_REGISTER_URL, formData);
-            
+
             console.log("✅ Response dari API:", response.data);
-            console.log("📊 Status Code:", response.status);
 
             toast.success("Registrasi Berhasil! Silakan Login.");
-            
+
             setTimeout(() => {
                 navigate('/login');
             }, 1500);
 
         } catch (err) {
             console.error("❌ Registrasi Gagal:", err);
-            
-            // Debug lebih detail
+
             if (err.response) {
-                console.error("📊 Status Error:", err.response.status);
-                console.error("📝 Error Data:", err.response.data);
-                console.error("📋 Error Headers:", err.response.headers);
-                
                 if (err.response.data?.errors) {
                     const validationErrors = Object.values(err.response.data.errors).flat();
                     setError(validationErrors.join(' '));
@@ -85,11 +88,9 @@ const FormRegister = () => {
                     toast.error(err.response.data.message);
                 }
             } else if (err.request) {
-                console.error("🚫 Tidak ada response:", err.request);
                 setError("Tidak ada respon dari server. Cek koneksi internet atau backend.");
                 toast.error("Server tidak merespon. Cek apakah backend berjalan.");
             } else {
-                console.error("⚠️ Error lain:", err.message);
                 setError("Terjadi kesalahan saat registrasi.");
                 toast.error("Terjadi kesalahan saat registrasi.");
             }
@@ -102,18 +103,14 @@ const FormRegister = () => {
         <Form onSubmit={handleSubmit}>
             {/* Nama Field */}
             <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Nama Lengkap</Form.Label>
+                <Form.Label className="fw-medium text-white">Nama Lengkap</Form.Label>
                 <Form.Control
                     type="text"
                     name="nama"
                     value={formData.nama}
                     onChange={handleChange}
                     placeholder="Masukkan nama lengkap kamu"
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
                     required
                     disabled={isSubmitting}
                 />
@@ -121,18 +118,14 @@ const FormRegister = () => {
 
             {/* Email Field */}
             <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Email</Form.Label>
+                <Form.Label className="fw-medium text-white">Email</Form.Label>
                 <Form.Control
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Contoh: user@email.com"
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
                     required
                     disabled={isSubmitting}
                 />
@@ -140,18 +133,14 @@ const FormRegister = () => {
 
             {/* Password Field */}
             <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Password</Form.Label>
+                <Form.Label className="fw-medium text-white">Password</Form.Label>
                 <Form.Control
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Minimal 8 karakter"
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
                     required
                     disabled={isSubmitting}
                 />
@@ -159,44 +148,45 @@ const FormRegister = () => {
 
             {/* Role Field */}
             <Form.Group className="mb-4">
-                <Form.Label className="fw-medium">Role</Form.Label>
+                <Form.Label className="fw-medium text-white">Role</Form.Label>
                 <Form.Select
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
                     disabled={isSubmitting}
+                    className="custom-select-dark"
                 >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                    <option value="user" style={{ color: "black" }}>User</option>
+                    <option value="admin" style={{ color: "black" }}>Admin</option>
                 </Form.Select>
-                <Form.Text className="text-muted">
+                <Form.Text style={{ color: "rgba(255,255,255,0.5)" }}>
                     Pilih role sesuai kebutuhan kamu
                 </Form.Text>
             </Form.Group>
 
             {/* Error Message */}
             {error && (
-                <div className="alert alert-danger" role="alert">
+                <div className="alert alert-danger py-2" style={{ fontSize: "0.9rem" }} role="alert">
                     {error}
                 </div>
             )}
 
-            {/* Register Button */}
+            {/* Register Button (Gradient) */}
             <Button
                 type="submit"
                 className="w-100 py-3 fw-bold mb-3"
                 style={{
-                    background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+                    background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
                     border: "none",
-                    borderRadius: "8px",
-                    fontSize: "16px"
+                    borderRadius: "50px", // Rounded pill
+                    fontSize: "16px",
+                    boxShadow: "0 4px 15px rgba(37, 117, 252, 0.4)",
+                    transition: "transform 0.2s"
                 }}
                 disabled={isSubmitting}
+                onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             >
                 {isSubmitting ? (
                     <>
@@ -210,20 +200,48 @@ const FormRegister = () => {
 
             {/* Login Link */}
             <div className="text-center">
-                <p className="text-muted mb-0">
+                <p className="mb-0" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>
                     Sudah punya akun?{" "}
-                    <Link 
+                    <Link
                         to="/login"
                         style={{
-                            color: "#2563eb",
+                            color: "#60a5fa", // Biru muda terang agar terbaca di dark bg
                             textDecoration: "none",
-                            fontWeight: "500"
+                            fontWeight: "600"
                         }}
                     >
                         Login di sini
                     </Link>
                 </p>
             </div>
+
+            {/* CSS Helper untuk Input Focus & Autofill */}
+            <style jsx>{`
+                .form-control:focus, .form-select:focus {
+                    background: rgba(0, 0, 0, 0.4) !important;
+                    border-color: #a78bfa !important;
+                    color: white !important;
+                    box-shadow: 0 0 0 0.25rem rgba(167, 139, 250, 0.25);
+                }
+                /* Mengatasi warna background kuning saat autofill browser */
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover, 
+                input:-webkit-autofill:focus, 
+                input:-webkit-autofill:active{
+                    -webkit-box-shadow: 0 0 0 30px #1a1a2e inset !important;
+                    -webkit-text-fill-color: white !important;
+                    transition: background-color 5000s ease-in-out 0s;
+                }
+                /* Memperbaiki icon dropdown select agar terlihat putih (opsional tergantung browser) */
+                .custom-select-dark {
+                    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+                }
+                /* Menargetkan placeholder pada semua input dan select di dalam form ini */
+                .form-control::placeholder {
+                    color: rgba(255, 255, 255, 0.6) !important; /* Ubah angka 0.6 untuk mengatur transparansi (1.0 = Putih Solid) */
+                    opacity: 1; /* Diperlukan untuk Firefox */
+                }
+            `}</style>
         </Form>
     );
 };

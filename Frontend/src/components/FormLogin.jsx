@@ -1,5 +1,5 @@
 import { Form, Button } from "react-bootstrap";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 import axios from 'axios';
@@ -15,6 +15,16 @@ const FormLogin = () => {
 
     const API_LOGIN_URL = 'http://localhost:8000/api/login';
 
+    // Style Input Gelap
+    const inputStyle = {
+        background: "rgba(0, 0, 0, 0.2)", // Gelap transparan
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        color: "white",
+        padding: "12px 16px",
+        borderRadius: "12px",
+        fontSize: "0.95rem"
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -28,14 +38,12 @@ const FormLogin = () => {
         setIsSubmitting(true);
         setError(null);
 
-        // Validasi form
         if (!formData.email || !formData.password) {
             toast.error("Email dan password harus diisi!");
             setIsSubmitting(false);
             return;
         }
 
-        // Validasi format email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             toast.error("Format email tidak valid!");
@@ -44,24 +52,19 @@ const FormLogin = () => {
         }
 
         try {
-            // Kirim request login ke API Laravel
             const response = await axios.post(API_LOGIN_URL, formData);
             
-            // Ambil token dan data user dari response
             const token = response.data.token;
             const userData = response.data.detail; 
             
-            // Simpan token dan data user ke localStorage
             localStorage.setItem('auth_token', token);
             localStorage.setItem('user', JSON.stringify(userData)); 
             localStorage.setItem('login_time', new Date().toISOString()); 
 
-            // Set header Authorization untuk request selanjutnya
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
             toast.success("Login berhasil! Selamat Datang.");
             
-            // Redirect ke dashboard setelah login berhasil
             setTimeout(() => {
                 navigate('/');
             }, 1000);
@@ -69,12 +72,10 @@ const FormLogin = () => {
         } catch (err) {
             console.error("Login Gagal:", err.response ? err.response.data : err.message);
             
-            // Handle error response dari API
             if (err.response && err.response.status === 401) {
                 setError("Email atau Password salah.");
                 toast.error("Email atau Password salah.");
             } else if (err.response && err.response.data.errors) {
-                // Handle validation errors dari Laravel
                 const validationErrors = Object.values(err.response.data.errors).flat();
                 setError(validationErrors.join(' '));
                 toast.error(validationErrors.join(', '));
@@ -91,18 +92,15 @@ const FormLogin = () => {
         <Form onSubmit={handleSubmit}>
             {/* Email Field */}
             <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Email</Form.Label>
+                <Form.Label className="fw-medium text-white">Email</Form.Label>
                 <Form.Control
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Masukkan email kamu"
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
+                    className="custom-input-dark" 
                     required
                     disabled={isSubmitting}
                 />
@@ -110,44 +108,44 @@ const FormLogin = () => {
 
             {/* Password Field */}
             <Form.Group className="mb-4">
-                <Form.Label className="fw-medium">Password</Form.Label>
+                <Form.Label className="fw-medium text-white">Password</Form.Label>
                 <Form.Control
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Minimal 8 karakter"
-                    style={{
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid #d1d5db"
-                    }}
+                    style={inputStyle}
                     required
                     disabled={isSubmitting}
                 />
-                <Form.Text className="text-muted">
+                <Form.Text style={{ color: "rgba(255,255,255,0.5)" }}>
                     Password harus minimal 8 karakter
                 </Form.Text>
             </Form.Group>
 
             {/* Error Message */}
             {error && (
-                <div className="alert alert-danger" role="alert">
+                <div className="alert alert-danger py-2" style={{ fontSize: "0.9rem" }} role="alert">
                     {error}
                 </div>
             )}
 
-            {/* Login Button */}
+            {/* Login Button (Gradient) */}
             <Button
                 type="submit"
                 className="w-100 py-3 fw-bold"
                 style={{
-                    background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+                    background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
                     border: "none",
-                    borderRadius: "8px",
-                    fontSize: "16px"
+                    borderRadius: "50px", // Rounded pill agar modern
+                    fontSize: "16px",
+                    boxShadow: "0 4px 15px rgba(37, 117, 252, 0.4)",
+                    transition: "transform 0.2s"
                 }}
                 disabled={isSubmitting}
+                onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             >
                 {isSubmitting ? (
                     <>
@@ -161,29 +159,35 @@ const FormLogin = () => {
 
             {/* Divider */}
             <div className="position-relative text-center my-4">
-                <hr />
+                <hr style={{ borderColor: "rgba(255,255,255,0.2)" }} />
                 <span 
-                    className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted"
-                    style={{ fontSize: "14px" }}
+                    className="position-absolute top-50 start-50 translate-middle px-3"
+                    style={{ 
+                        fontSize: "14px", 
+                        color: "rgba(255,255,255,0.6)",
+                        background: "transparent"
+                    }}
                 >
-                    atau
+                    <span style={{ background: "#2e2550", padding: "0 10px", borderRadius: "4px" }}>
+                        atau
+                    </span>
                 </span>
             </div>
 
-            {/* Register Link */}
+            {/* Register Link (Ghost Button Style) */}
             <div className="text-center">
-                <p className="text-muted mb-2" style={{ fontSize: "14px" }}>
+                <p className="mb-2" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>
                     Gak punya akun?
                 </p>
                 <Button
-                    variant="outline-primary"
+                    variant="outline-light" // Menggunakan varian light agar terlihat di dark bg
                     className="w-100"
                     style={{
-                        border: "1.5px solid #2563eb",
-                        color: "#2563eb",
-                        borderRadius: "8px",
+                        borderRadius: "50px",
                         padding: "10px",
-                        fontWeight: "500"
+                        fontWeight: "500",
+                        borderColor: "rgba(255,255,255,0.3)",
+                        color: "rgba(255,255,255,0.9)"
                     }}
                     onClick={() => navigate("/register")}
                     disabled={isSubmitting}
@@ -191,6 +195,30 @@ const FormLogin = () => {
                     Yuk, buat akun
                 </Button>
             </div>
+            
+            {/* CSS Helper untuk Input Focus & Autofill */}
+            <style jsx>{`
+                .form-control:focus {
+                    background: rgba(0, 0, 0, 0.4) !important;
+                    border-color: #a78bfa !important;
+                    color: white !important;
+                    box-shadow: 0 0 0 0.25rem rgba(167, 139, 250, 0.25);
+                }
+                /* Mengatasi warna background kuning saat autofill browser */
+                input:-webkit-autofill,
+                input:-webkit-autofill:hover, 
+                input:-webkit-autofill:focus, 
+                input:-webkit-autofill:active{
+                    -webkit-box-shadow: 0 0 0 30px #1a1a2e inset !important;
+                    -webkit-text-fill-color: white !important;
+                    transition: background-color 5000s ease-in-out 0s;
+                }
+                /* Menargetkan placeholder pada semua input dan select di dalam form ini */
+                .form-control::placeholder {
+                    color: rgba(255, 255, 255, 0.6) !important; /* Ubah angka 0.6 untuk mengatur transparansi (1.0 = Putih Solid) */
+                    opacity: 1; /* Diperlukan untuk Firefox */
+                }
+            `}</style>
         </Form>
     );
 };
