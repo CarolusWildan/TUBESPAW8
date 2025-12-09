@@ -11,6 +11,7 @@ import KelolaStudioPage from "../pages/KelolaStudioPage";
 import KelolaJadwalPage from "../pages/KelolaJadwalPage";
 import PesanTiketPage from "../pages/PesanTiketPage";
 import PilihJadwalPage from "../pages/PilihJadwalPage";
+import ReportPage from '../pages/ReportPage';
 import RiwayatPage from "../pages/RiwayatPage";
 
 // Protected Route Component
@@ -79,9 +80,34 @@ const router = createBrowserRouter([
                 element: <ProtectedRoute><RegisterPage /></ProtectedRoute>
             },
             // === ADMIN ===
-            { path: "/kelola-film", element: <AdminRoute><KelolaFilmPage /></AdminRoute> },
-            { path: "/kelola-studio", element: <AdminRoute><KelolaStudioPage /></AdminRoute> },
-            { path: "/kelola-jadwal", element: <AdminRoute><KelolaJadwalPage /></AdminRoute> },
+            { 
+                path: "/kelola-film", 
+                element: 
+                <AdminRoute>
+                    <KelolaFilmPage />
+                </AdminRoute> 
+            },
+            { 
+                path: "/kelola-studio", 
+                element: 
+                <AdminRoute>
+                    <KelolaStudioPage />
+                </AdminRoute> 
+            },
+            { 
+                path: "/kelola-jadwal", 
+                element: 
+                <AdminRoute>
+                    <KelolaJadwalPage />
+                </AdminRoute> 
+            },
+            {
+                path: "/report",
+                element: 
+                <AdminRoute>
+                    <ReportPage />
+                </AdminRoute> 
+            }, 
         ],
     },
 ]);

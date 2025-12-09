@@ -44,6 +44,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/beli-tiket', [TransaksiController::class, 'beliTiket']);
     Route::post('/transaksi', [TransaksiController::class, 'beliTiket']);
     Route::get('/transaksi', [TransaksiController::class, 'index']);
+
+    // --- REPORT ROUTES (Admin Only) ---
+    Route::get('/sales-report', [TransaksiController::class, 'getSalesReport']);
+    Route::get('/sales-by-movie', [TransaksiController::class, 'getSalesByMovie']);
+    Route::get('/all-transactions', [TransaksiController::class, 'getAllTransactions']);
+    Route::get('/today-sales', [TransaksiController::class, 'getTodaySales']); // Untuk dashboard
+    
     
     // --- Admin: Film Management ---
     Route::post('/films/create', [FilmController::class, 'create']);
