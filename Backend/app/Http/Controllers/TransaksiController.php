@@ -413,4 +413,64 @@ class TransaksiController extends Controller
             ], 500);
         }
     }
+
+    /**
+ * Mengambil riwayat pembelian tiket (berbasis tiket, bukan transaksi)
+ */
+    public function getRiwayatPembelian()
+    {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Ambil semua transaksi user beserta tiket, film, jadwal, kursi, studio
+        $riwayat = Transaksi::where('id_user', $userId)
+            ->with([
+                'film:id_film,judul',
+                'jadwal:id_jadwal,tanggal_tayang,jam_tayang,id_studio',
+                'jadwal.studio:id_studio,nama_studio',
+                'tiket.kursi:id_kursi,nomor_kursi'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Format ke bentuk yang mudah dipakai front-end
+        $formatted = [];
+
+        foreach ($riwayat as $transaksi) {
+            foreach ($transaksi->tiket as $tiket) {
+                $formatted[] = [
+                    'id_transaksi'      => $transaksi->id_transaksi,
+                    'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
+                    'metode'            => $transaksi->metode,
+                    'jumlah_tiket'      => $transaksi->jumlah_tiket,
+                    'total_harga'       => $transaksi->total_harga,
+
+                    'film' => [
+                        'judul' => $transaksi->film->judul ?? 'N/A',
+                    ],
+
+                    'jadwal' => [
+                        'tanggal_tayang' => $transaksi->jadwal->tanggal_tayang ?? null,
+                        'jam_tayang'     => $transaksi->jadwal->jam_tayang ?? null,
+                        'studio'         => $transaksi->jadwal->studio->nama_studio ?? 'N/A',
+                    ],
+
+                    'kursi' => [
+                        'nomor_kursi' => $tiket->kursi->nomor_kursi ?? '?',
+                    ],
+                ];
+            }
+        }
+
+        return response()->json([
+            'message' => 'Riwayat pembelian tiket berhasil dimuat',
+            'data' => $formatted
+        ], 200);
+    }
+
 }
