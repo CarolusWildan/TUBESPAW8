@@ -150,6 +150,14 @@ const TopNavbar = () => {
                             Film
                         </Button>
 
+                        <Button 
+                            style={ghostButtonStyle}
+                            className="btn-ghost-hover"
+                            onClick={() => navigate("/riwayat-pemesanan")}
+                        >
+                            Riwayat Pemesanan
+                        </Button>
+
                         {isAuthenticated ? (
                             <>
                                 {/* Dashboard Button (Hanya untuk Admin) */}

@@ -76,6 +76,10 @@ const router = createBrowserRouter([
                 element: <ProtectedRoute><PesanTiketPage /></ProtectedRoute>
             },
             {
+                path: "/riwayat-pemesanan", 
+                element: <ProtectedRoute><RiwayatPage /></ProtectedRoute>
+            },
+            {
                 path: "/history", 
                 element: <ProtectedRoute><RegisterPage /></ProtectedRoute>
             },
