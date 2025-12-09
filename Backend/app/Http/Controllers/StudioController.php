@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Studio;
+use App\Models\Kursi; // IMPORT PENTING
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB; // IMPORT PENTING
 
 class StudioController extends Controller
 {
@@ -28,21 +30,69 @@ class StudioController extends Controller
             ], 422);
         }
 
-        $studio = Studio::create([
-            'nomor_studio' => $request->nomor_studio,
-            'kapasitas' => $request->kapasitas,
-            'tipe' => $request->tipe, // TAMBAHAN: Simpan tipe ke DB
-        ]);
+        // Gunakan Transaction agar atomik (semua sukses atau semua gagal)
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'message' => 'Studio Created Successfully',
-            'studio' => $studio,
-        ], 201);
+            // 1. Buat Studio
+            $studio = Studio::create([
+                'nomor_studio' => $request->nomor_studio,
+                'kapasitas' => $request->kapasitas,
+                'tipe' => $request->tipe,
+            ]);
+
+            // 2. Generate Kursi Otomatis
+            $kapasitas = $request->kapasitas;
+            $seatsPerRow = 8; // Konfigurasi: 8 kursi per baris
+            $kursiData = [];
+            $now = now(); 
+
+            for ($i = 1; $i <= $kapasitas; $i++) {
+                // Algoritma Penamaan Kursi (A1..A8, B1..B8)
+                $rowIndex = floor(($i - 1) / $seatsPerRow);
+                
+                // Handle label baris A-Z, lalu AA-AZ
+                $rowLabel = '';
+                $tempIndex = $rowIndex;
+                do {
+                    $remainder = $tempIndex % 26;
+                    $rowLabel = chr(65 + $remainder) . $rowLabel;
+                    $tempIndex = floor($tempIndex / 26) - 1;
+                } while ($tempIndex >= 0);
+
+                $seatNum = (($i - 1) % $seatsPerRow) + 1;
+                $kodeKursi = $rowLabel . $seatNum;
+
+                // Tampung ke array (Bulk Prepare)
+                $kursiData[] = [
+                    'id_studio' => $studio->id_studio,
+                    'kode_kursi' => $kodeKursi,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            // 3. Simpan Sekaligus (Bulk Insert)
+            Kursi::insert($kursiData);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Studio Created Successfully (Seats Generated)',
+                'studio' => $studio,
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'message' => 'Failed to create studio',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, string $id)
     {
-        // PERBAIKAN: Cari film berdasarkan id_film (karena primary key adalah id_film)
         $studio = Studio::where('id_studio', $id)->first();
 
         if(!$studio){
@@ -61,10 +111,11 @@ class StudioController extends Controller
             ], 422);
         }
 
+        // Update hanya data studio, tidak regenerate kursi untuk keamanan data transaksi lama
         $studio->update([
             'nomor_studio' => $request->nomor_studio,
             'kapasitas' => $request->kapasitas,
-            'tipe' => $request->tipe, // TAMBAHAN: Update tipe
+            'tipe' => $request->tipe,
         ]);
         
         return response()->json([
@@ -75,7 +126,6 @@ class StudioController extends Controller
 
     public function delete(string $id)
     {
-        // PERBAIKAN: Cari film berdasarkan id_film
         $studio = Studio::where('id_studio', $id)->first();
 
         if(!$studio){
@@ -89,7 +139,6 @@ class StudioController extends Controller
         ]);
     }
 
-    // PERBAIKAN: Tambahkan method show untuk get film by ID
     public function show(string $id)
     {
         $studio = Studio::where('id_studio', $id)->first();
@@ -100,5 +149,4 @@ class StudioController extends Controller
 
         return response()->json($studio);
     }
-
 }

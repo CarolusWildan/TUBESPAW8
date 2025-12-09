@@ -8,8 +8,9 @@ class Studio extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = "id_studio";
     protected $table = 'studio';
+    protected $primaryKey = "id_studio";
+    
 
     protected $fillable = [
         'nomor_studio',
@@ -27,3 +28,4 @@ class Studio extends Model
         return $this->hasMany(Jadwal::class, 'id_studio', 'id_studio');
     }
 }
+

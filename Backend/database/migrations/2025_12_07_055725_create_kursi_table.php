@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('id_kursi');
             $table->unsignedBigInteger('id_studio');
             $table->string('kode_kursi'); // contoh: A1, B2, C7
-            $table->enum('status', ['tersedia', 'terpesan'])->default('tersedia');
+            // $table->enum('status', ['tersedia', 'terpesan'])->default('tersedia');
             $table->timestamps();
 
             $table->foreign('id_studio')
