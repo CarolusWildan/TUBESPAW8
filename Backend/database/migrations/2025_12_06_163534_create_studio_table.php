@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_studio');
             $table->integer('nomor_studio')->unique();
             $table->integer('kapasitas');
+            $table->enum('tipe',['reguler', 'imax', 'screenx']);
             $table->timestamps();
             
             // Indexes
