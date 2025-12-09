@@ -179,7 +179,7 @@ const DashboardPage = () => {
                 <>
                     <h4 className="text-white mb-4">Aksi Cepat Admin</h4>
                     <Row className="mb-5">
-                        <Col md={4} className="mb-3">
+                        <Col className="mb-3">
                             <ActionCard
                                 icon="bi-film"
                                 title="Kelola Film"
@@ -189,7 +189,7 @@ const DashboardPage = () => {
                                 navigate={navigate}
                             />
                         </Col>
-                        <Col md={4} className="mb-3">
+                        <Col className="mb-3">
                             <ActionCard
                                 icon="bi-grid-3x3-gap-fill"
                                 title="Kelola Studio"
@@ -199,13 +199,23 @@ const DashboardPage = () => {
                                 navigate={navigate}
                             />
                         </Col>
-                        <Col md={4} className="mb-3">
+                        <Col className="mb-3">
                             <ActionCard
                                 icon="bi-calendar-check"
                                 title="Kelola Jadwal"
                                 description="Tambah, edit, dan atur jam tayang film." 
                                 color="admin"
                                 navigatePath="/kelola-jadwal"
+                                navigate={navigate}
+                            />
+                        </Col>
+                        <Col className="mb-3">
+                            <ActionCard
+                                icon="bi-calendar-check"
+                                title="Report"
+                                description="Melihat Grafik Penjualan Tiket Per Bulan" 
+                                color="admin"
+                                navigatePath="/report"
                                 navigate={navigate}
                             />
                         </Col>
