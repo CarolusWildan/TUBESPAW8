@@ -1,76 +1,63 @@
 import React from 'react';
 
-const SeatSelection = ({ selectedSeats, onSeatSelect, bookedSeats = [] }) => {
-    const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    // Layout sederhana: A-G, 1-8 (dengan lorong di tengah)
+const SeatSelection = ({ capacity = 64, selectedSeats, onSeatSelect, bookedSeats = [], studioSeats = [] }) => {
+    // Jika data kursi belum dimuat dari API, tampilkan loading/kosong
+    if (!studioSeats || studioSeats.length === 0) {
+        return (
+            <div className="d-flex flex-column align-items-center justify-content-center py-5">
+                <div className="text-white-50">Memuat denah kursi...</div>
+            </div>
+        );
+    }
 
-    // Helper untuk cek status kursi
+    // Kelompokkan kursi berdasarkan BARIS (A, B, C...)
+    // Asumsi nomor_kursi format "A1", "A2"
+    const rows = {};
+    studioSeats.forEach(seat => {
+        // Ambil huruf pertama sebagai Label Baris (misal 'A' dari 'A1')
+        const rowLabel = seat.nomor_kursi.replace(/[0-9]/g, ''); 
+        if (!rows[rowLabel]) {
+            rows[rowLabel] = [];
+        }
+        rows[rowLabel].push(seat);
+    });
+
+    const isSeatBooked = (seatId) => bookedSeats.map(Number).includes(Number(seatId));
     const isSeatSelected = (seatId) => selectedSeats.includes(seatId);
-    const isSeatBooked = (seatId) => bookedSeats.includes(seatId);
-
-    const handleSeatClick = (seatId) => {
-        if (isSeatBooked(seatId)) return; // Jangan lakukan apa-apa jika sudah dipesan
-        onSeatSelect(seatId);
-    };
 
     return (
-        <div className="d-flex flex-column align-items-center w-100">
+        <div className="d-flex flex-column align-items-center w-100 p-4" style={{ background: "#111827", borderRadius: "16px" }}>
             {/* Layar Bioskop */}
-            <div className="w-100 mb-5 text-center">
+            <div className="w-100 mb-5 text-center position-relative">
                 <div 
                     style={{
-                        height: "8px",
-                        width: "80%",
-                        margin: "0 auto",
-                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
-                        borderRadius: "50%",
-                        boxShadow: "0 10px 30px rgba(255, 255, 255, 0.3)"
+                        height: "40px", width: "80%", margin: "0 auto",
+                        background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%)",
+                        clipPath: "polygon(0 0, 100% 0, 85% 100%, 15% 100%)",
                     }}
                 />
-                <small className="text-white-50 mt-2 d-block">LAYAR</small>
+                <div style={{ height: "4px", width: "80%", margin: "-4px auto 0", background: "#fff", borderRadius: "2px", boxShadow: "0 0 20px rgba(255,255,255,0.5)" }} />
+                <small className="text-white-50 mt-3 d-block" style={{ letterSpacing: "2px" }}>LAYAR</small>
             </div>
 
-            {/* Grid Kursi */}
-            <div className="d-flex flex-column gap-3">
-                {rows.map((row) => (
-                    <div key={row} className="d-flex gap-4 justify-content-center">
-                        {/* Sisi Kiri (1-4) */}
-                        <div className="d-flex gap-2">
-                            {[1, 2, 3, 4].map((num) => {
-                                const seatId = `${row}${num}`;
-                                const booked = isSeatBooked(seatId);
-                                const selected = isSeatSelected(seatId);
-                                
-                                return (
-                                    <Seat 
-                                        key={seatId} 
-                                        id={seatId} 
-                                        status={booked ? 'sold' : selected ? 'selected' : 'available'}
-                                        onClick={() => handleSeatClick(seatId)}
-                                    />
-                                );
-                            })}
-                        </div>
+            {/* Grid Kursi Dinamis dari DB */}
+            <div className="d-flex flex-column gap-2">
+                {Object.keys(rows).map((rowLabel) => (
+                    <div key={rowLabel} className="d-flex gap-3 justify-content-center align-items-center">
+                        {/* Label Baris */}
+                        <div className="text-white-50 fw-bold small" style={{ width: '20px' }}>{rowLabel}</div>
 
-                        {/* Jalan Tengah (Gap) */}
-                        <div style={{ width: "20px" }}></div>
-
-                        {/* Sisi Kanan (5-8) */}
-                        <div className="d-flex gap-2">
-                            {[5, 6, 7, 8].map((num) => {
-                                const seatId = `${row}${num}`;
-                                const booked = isSeatBooked(seatId);
-                                const selected = isSeatSelected(seatId);
-
-                                return (
-                                    <Seat 
-                                        key={seatId} 
-                                        id={seatId} 
-                                        status={booked ? 'sold' : selected ? 'selected' : 'available'}
-                                        onClick={() => handleSeatClick(seatId)}
-                                    />
-                                );
-                            })}
+                        {/* Kursi Baris Tersebut */}
+                        <div className="d-flex gap-1">
+                            {rows[rowLabel].map((seat) => (
+                                <Seat 
+                                    key={seat.id_kursi} // ID Asli DB
+                                    id={seat.id_kursi}
+                                    label={seat.nomor_kursi}
+                                    status={isSeatBooked(seat.id_kursi) ? 'sold' : isSeatSelected(seat.id_kursi) ? 'selected' : 'available'}
+                                    onClick={() => !isSeatBooked(seat.id_kursi) && onSeatSelect(seat.id_kursi)}
+                                />
+                            ))}
                         </div>
                     </div>
                 ))}
@@ -78,75 +65,38 @@ const SeatSelection = ({ selectedSeats, onSeatSelect, bookedSeats = [] }) => {
 
             {/* Legenda */}
             <div className="d-flex gap-4 mt-5 justify-content-center">
-                <div className="d-flex align-items-center gap-2">
-                    <div style={{ width: 20, height: 20, border: "1px solid rgba(255,255,255,0.5)", borderRadius: "6px" }}></div>
-                    <small className="text-white-50">Tersedia</small>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                    <div style={{ width: 20, height: 20, background: "#a78bfa", borderRadius: "6px", boxShadow: "0 0 10px #a78bfa" }}></div>
-                    <small className="text-white-50">Dipilih</small>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                    <div style={{ width: 20, height: 20, background: "#374151", borderRadius: "6px" }}></div>
-                    <small className="text-white-50">Terisi</small>
-                </div>
+                <LegendBox color="rgba(255,255,255,0.1)" border="1px solid #555" label="Tersedia" />
+                <LegendBox color="#e5e7eb" label="Dipilih" />
+                <LegendBox color="#ef4444" label="Terisi" />
             </div>
         </div>
     );
 };
 
-// Sub-component untuk kotak kursi individu
-const Seat = ({ id, status, onClick }) => {
+const Seat = ({ id, label, status, onClick }) => {
     let style = {
-        width: "36px",
-        height: "36px",
-        borderRadius: "8px 8px 4px 4px", // Bentuk kursi
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "12px",
-        fontWeight: "bold",
-        transition: "all 0.2s ease"
+        width: "32px", height: "32px", borderRadius: "4px", cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "600",
+        transition: "all 0.2s",
+        background: "rgba(255,255,255,0.1)",
+        color: "rgba(255,255,255,0.7)",
+        border: "1px solid rgba(255,255,255,0.2)"
     };
 
     if (status === 'sold') {
-        style.background = "#374151"; // Abu gelap
-        style.color = "#6b7280";
-        style.cursor = "not-allowed";
+        style.background = "#ef4444"; style.color = "#fff"; style.border = "none"; style.cursor = "not-allowed"; style.opacity = 0.6;
     } else if (status === 'selected') {
-        style.background = "#a78bfa"; // Ungu Neon
-        style.color = "white";
-        style.boxShadow = "0 0 15px rgba(167, 139, 250, 0.6)";
-        style.transform = "scale(1.1)";
-        style.border = "none";
-    } else {
-        // Available
-        style.background = "rgba(255,255,255,0.05)";
-        style.border = "1px solid rgba(255,255,255,0.3)";
-        style.color = "rgba(255,255,255,0.7)";
+        style.background = "#e5e7eb"; style.color = "#000"; style.border = "none"; style.transform = "scale(1.1)";
     }
 
-    return (
-        <div 
-            onClick={onClick} 
-            style={style}
-            onMouseEnter={(e) => {
-                if(status === 'available') {
-                    e.currentTarget.style.borderColor = "white";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                }
-            }}
-            onMouseLeave={(e) => {
-                if(status === 'available') {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                }
-            }}
-        >
-            {id}
-        </div>
-    );
+    return <div onClick={onClick} style={style} title={`Kursi: ${label}`}>{status === 'selected' ? label : ""}</div>;
 };
+
+const LegendBox = ({ color, border, label }) => (
+    <div className="d-flex align-items-center gap-2">
+        <div style={{ width: 16, height: 16, background: color, border: border || 'none', borderRadius: "4px" }}></div>
+        <small className="text-white-50">{label}</small>
+    </div>
+);
 
 export default SeatSelection;

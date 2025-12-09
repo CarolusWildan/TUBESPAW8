@@ -28,4 +28,10 @@ class Transaksi extends Model
         return $this->hasMany(Tiket::class, 'id_transaksi', 'id_transaksi');
     }
 
+    // tambahan relasi ke Jadwal
+    public function jadwal()
+    {
+        return $this->belongsTo(Jadwal::class, 'id_jadwal');
+    }
+
 }
