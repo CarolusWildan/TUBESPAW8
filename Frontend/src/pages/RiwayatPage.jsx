@@ -14,7 +14,7 @@ const RiwayatPage = () => {
     
     // Asumsi: Backend memiliki endpoint GET /api/transaksi
     // Endpoint ini harusnya secara otomatis memfilter berdasarkan user ID dari token
-    const API_TRANSAKSI_URL = `${API_BASE}/transaksi`; 
+    const API_TRANSAKSI_URL = `${API_BASE}/riwayat-pembelian`; 
 
     const formatRupiah = (amount) => {
         return new Intl.NumberFormat('id-ID', {
@@ -108,12 +108,12 @@ const RiwayatPage = () => {
                                         <div>
                                             {/* Film Title & Jadwal */}
                                             <h5 className="fw-bold text-primary mb-1">
-                                                {t.jadwal?.film?.judul || "Film Tidak Diketahui"} 
+                                                {t.film?.judul || "Film Tidak Diketahui"} 
                                             </h5>
                                             <p className="mb-0 text-white-50 small">
                                                 {t.tanggal_transaksi || "Tanggal Transaksi"} | {t.jadwal?.jam_tayang?.substring(0, 5) || "Waktu"} 
                                                 <span className="mx-2">|</span> 
-                                                {t.jadwal?.studio?.nama_studio || "Studio"}
+                                                {t.jadwal?.studio || "Studio"}
                                             </p>
                                         </div>
                                         <div>
@@ -133,7 +133,7 @@ const RiwayatPage = () => {
                                                 <span className="text-white-50">Kursi:</span>
                                                 {/* Asumsi: Kursi dikirim sebagai array atau string/map. Jika array of objects, perlu normalisasi */}
                                                 <span className="fw-medium text-white">
-                                                    {t.nomor_kursi || "A1, A2,..."} 
+                                                    {t.kursi?.nomor_kursi || "-"} 
                                                 </span>
                                             </div>
                                         </Col>

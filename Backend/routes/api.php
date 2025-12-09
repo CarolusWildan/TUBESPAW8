@@ -50,6 +50,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/sales-by-movie', [TransaksiController::class, 'getSalesByMovie']);
     Route::get('/all-transactions', [TransaksiController::class, 'getAllTransactions']);
     Route::get('/today-sales', [TransaksiController::class, 'getTodaySales']); // Untuk dashboard
+
+    Route::get('/riwayat-pembelian', [TransaksiController::class, 'getRiwayatPembelian']);
+
     
     
     // --- Admin: Film Management ---
