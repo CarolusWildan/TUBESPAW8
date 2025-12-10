@@ -11,10 +11,7 @@ const RiwayatPage = () => {
     const navigate = useNavigate();
 
     const API_BASE = 'http://localhost:8000/api';
-    
-    // Asumsi: Backend memiliki endpoint GET /api/transaksi
-    // Endpoint ini harusnya secara otomatis memfilter berdasarkan user ID dari token
-    const API_TRANSAKSI_URL = `${API_BASE}/riwayat-pembelian`; 
+    const API_TRANSAKSI_URL = `${API_BASE}/riwayat-pembelian`;
 
     const formatRupiah = (amount) => {
         return new Intl.NumberFormat('id-ID', {
@@ -23,10 +20,9 @@ const RiwayatPage = () => {
             minimumFractionDigits: 0,
         }).format(amount);
     };
-    
-    // Helper untuk menentukan status Badge
+
     const getStatusBadge = (status) => {
-        switch (status.toLowerCase()) {
+        switch ((status || 'sukses').toLowerCase()) {
             case 'sukses':
                 return <Badge bg="success">Sukses</Badge>;
             case 'pending':
@@ -56,15 +52,16 @@ const RiwayatPage = () => {
                 };
 
                 const response = await axios.get(API_TRANSAKSI_URL, config);
-                
-                // Asumsi data transaksi ada di response.data.data atau langsung di response.data
-                const data = Array.isArray(response.data.data) ? response.data.data : (Array.isArray(response.data) ? response.data : []);
-                
-                // Simpan data transaksi
+
+                const data = Array.isArray(response.data.data)
+                    ? response.data.data
+                    : [];
+
                 setTransactions(data);
 
             } catch (err) {
                 console.error("Gagal mengambil riwayat transaksi:", err);
+
                 if (err.response?.status === 401) {
                     setError("Sesi Anda habis. Silakan login kembali.");
                 } else if (err.code === 'ERR_NETWORK') {
@@ -72,6 +69,7 @@ const RiwayatPage = () => {
                 } else {
                     setError("Terjadi kesalahan saat memuat data.");
                 }
+
                 setTransactions([]);
             } finally {
                 setLoading(false);
@@ -106,48 +104,62 @@ const RiwayatPage = () => {
                                 <Card.Body>
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
-                                            {/* Film Title & Jadwal */}
+                                            {/* FILM */}
                                             <h5 className="fw-bold text-primary mb-1">
-                                                {t.film?.judul || "Film Tidak Diketahui"} 
+                                                {t.film?.judul || "Film Tidak Diketahui"}
                                             </h5>
+
+                                            {/* WAKTU + STUDIO */}
                                             <p className="mb-0 text-white-50 small">
-                                                {t.tanggal_transaksi || "Tanggal Transaksi"} | {t.jadwal?.jam_tayang?.substring(0, 5) || "Waktu"} 
-                                                <span className="mx-2">|</span> 
-                                                {t.jadwal?.studio || "Studio"}
+                                                {t.tanggal_transaksi || "-"} 
+                                                <span className="mx-2">|</span>
+                                                {t.jadwal?.jam_tayang?.substring(0, 5) || "-"}
+                                                <span className="mx-2">|</span>
+                                                {t.jadwal?.studio?.nomor_studio 
+                                                    ? `Studio ${t.jadwal.studio.nomor_studio}`
+                                                    : "Studio Tidak Diketahui"}
                                             </p>
                                         </div>
+
+                                        {/* STATUS (default sukses) */}
                                         <div>
-                                            {getStatusBadge(t.status_transaksi || 'Unknown')}
+                                            {getStatusBadge("sukses")}
                                         </div>
                                     </div>
-                                    <hr style={{borderColor: "rgba(255,255,255,0.1)"}} />
 
-                                    {/* Detail Pembelian */}
+                                    <hr style={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+                                    {/* DETAIL */}
                                     <Row>
                                         <Col md={6}>
                                             <div className="d-flex justify-content-between small mb-1">
                                                 <span className="text-white-50">Jumlah Tiket:</span>
                                                 <span className="fw-medium text-white">{t.jumlah_tiket || 0}</span>
                                             </div>
+
                                             <div className="d-flex justify-content-between small mb-1">
                                                 <span className="text-white-50">Kursi:</span>
-                                                {/* Asumsi: Kursi dikirim sebagai array atau string/map. Jika array of objects, perlu normalisasi */}
                                                 <span className="fw-medium text-white">
-                                                    {t.kursi?.nomor_kursi || "-"} 
+                                                    {t.kursi?.kode_kursi || "-"}
                                                 </span>
                                             </div>
                                         </Col>
+
                                         <Col md={6}>
                                             <div className="d-flex justify-content-between small mb-1">
                                                 <span className="text-white-50">Total Pembayaran:</span>
                                                 <span className="fw-bold text-warning">{formatRupiah(t.total_harga || 0)}</span>
                                             </div>
+
                                             <div className="d-flex justify-content-between small mb-1">
                                                 <span className="text-white-50">Metode Bayar:</span>
-                                                <span className="fw-medium text-white text-uppercase">{t.metode_pembayaran || 'QRIS'}</span>
+                                                <span className="fw-medium text-white text-uppercase">
+                                                    {t.metode || "QRIS"}
+                                                </span>
                                             </div>
                                         </Col>
                                     </Row>
+
                                 </Card.Body>
                             </Card>
                         </Col>

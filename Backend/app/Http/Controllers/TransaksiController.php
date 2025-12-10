@@ -427,22 +427,21 @@ class TransaksiController extends Controller
             ], 401);
         }
 
-        // Ambil semua transaksi user beserta tiket, film, jadwal, kursi, studio
+        // Ambil transaksi dengan relasi lengkap
         $riwayat = Transaksi::where('id_user', $userId)
             ->with([
-                'film:id_film,judul',
-                'jadwal:id_jadwal,tanggal_tayang,jam_tayang,id_studio',
-                'jadwal.studio:id_studio,nama_studio',
-                'tiket.kursi:id_kursi,nomor_kursi'
+                'film:id_film,judul,genre,durasi_film,start_date,end_date,cover_path,status',
+                'jadwal:id_jadwal,id_film,id_studio,tanggal_tayang,jam_tayang,harga',
+                'jadwal.studio:id_studio,nomor_studio,kapasitas,tipe',
+                'tiket.kursi:id_kursi,id_studio,kode_kursi'
             ])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Format ke bentuk yang mudah dipakai front-end
         $formatted = [];
 
         foreach ($riwayat as $transaksi) {
-            foreach ($transaksi->tiket as $tiket) {
+            foreach ($transaksi->tiket as $t) {
                 $formatted[] = [
                     'id_transaksi'      => $transaksi->id_transaksi,
                     'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
@@ -450,18 +449,33 @@ class TransaksiController extends Controller
                     'jumlah_tiket'      => $transaksi->jumlah_tiket,
                     'total_harga'       => $transaksi->total_harga,
 
+                    // Film
                     'film' => [
-                        'judul' => $transaksi->film->judul ?? 'N/A',
+                        'judul'        => $transaksi->film->judul ?? '',
+                        'genre'        => $transaksi->film->genre ?? '',
+                        'durasi_film'  => $transaksi->film->durasi_film ?? '',
+                        'start_date'   => $transaksi->film->start_date ?? '',
+                        'end_date'     => $transaksi->film->end_date ?? '',
+                        'cover_path'   => $transaksi->film->cover_path ?? '',
+                        'status'       => $transaksi->film->status ?? '',
                     ],
 
+                    // Jadwal + Studio
                     'jadwal' => [
-                        'tanggal_tayang' => $transaksi->jadwal->tanggal_tayang ?? null,
-                        'jam_tayang'     => $transaksi->jadwal->jam_tayang ?? null,
-                        'studio'         => $transaksi->jadwal->studio->nama_studio ?? 'N/A',
+                        'tanggal_tayang' => $transaksi->jadwal->tanggal_tayang ?? '',
+                        'jam_tayang'     => $transaksi->jadwal->jam_tayang ?? '',
+                        'harga'          => $transaksi->jadwal->harga ?? '',
+
+                        'studio' => [
+                            'nomor_studio' => $transaksi->jadwal->studio->nomor_studio ?? '',
+                            'kapasitas'    => $transaksi->jadwal->studio->kapasitas ?? '',
+                            'tipe'         => $transaksi->jadwal->studio->tipe ?? '',
+                        ]
                     ],
 
+                    // Kursi
                     'kursi' => [
-                        'nomor_kursi' => $tiket->kursi->nomor_kursi ?? '?',
+                        'kode_kursi' => $t->kursi->kode_kursi ?? '',
                     ],
                 ];
             }
@@ -472,5 +486,6 @@ class TransaksiController extends Controller
             'data' => $formatted
         ], 200);
     }
+
 
 }
