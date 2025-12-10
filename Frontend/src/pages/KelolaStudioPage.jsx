@@ -325,13 +325,13 @@ const KelolaStudioPage = () => {
                                         <td>
                                             <div className="d-flex justify-content-center gap-2">
                                                 <Button variant="outline-info" size="sm" onClick={() => handleViewDetails(studio)}>
-                                                    <i className="bi bi-eye"></i>
+                                                    <i className="bi bi-eye"></i>Detail
                                                 </Button>
                                                 <Button variant="outline-warning" size="sm" onClick={() => handleOpenEditModal(studio)}>
-                                                    <i className="bi bi-pencil"></i>
+                                                    <i className="bi bi-pencil"></i>Edit
                                                 </Button>
                                                 <Button variant="outline-danger" size="sm" onClick={() => handleOpenDeleteModal(studio)}>
-                                                    <i className="bi bi-trash"></i>
+                                                    <i className="bi bi-trash"></i>Delete
                                                 </Button>
                                             </div>
                                         </td>

@@ -341,7 +341,7 @@ const PesanTiketPage = () => {
             console.log("✅ [DEBUG] Transaksi Berhasil:", response.data);
 
             toast.success("Tiket Berhasil Dipesan!");
-            setTimeout(() => navigate('/dashboard'), 1500);
+            setTimeout(() => navigate('/riwayat-pesanan'), 1500);
 
         } catch (err) {
             console.error("🔥 Transaksi Gagal:", err);

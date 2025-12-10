@@ -376,7 +376,7 @@ const KelolaFilmPage = () => {
                     <i className="bi bi-house-door me-1"></i> Dashboard
                 </Breadcrumb.Item>
                 <Breadcrumb.Item active>
-                    <i className="bi bi-film me-1"></i> Kelola Film
+                    <i className="mb-4 fw-bolder text-white"></i> Kelola Film
                 </Breadcrumb.Item>
             </Breadcrumb>
 
