@@ -61,7 +61,7 @@ const PilihJadwalPage = () => {
     const filteredSchedules = schedules.filter(s => s.tanggal_tayang === selectedDate);
     
     const schedulesByStudio = filteredSchedules.reduce((acc, curr) => {
-        const studioName = curr.studio?.nama_studio || `Studio ${curr.id_studio}`;
+        const studioName = curr.studio?.nomor_studio || `Studio ${curr.nomor_studio}`;
         if (!acc[studioName]) acc[studioName] = [];
         acc[studioName].push(curr);
         return acc;
@@ -252,7 +252,7 @@ const PilihJadwalPage = () => {
                                                     <i className="bi bi-camera-reels-fill"></i>
                                                 </div>
                                                 <div>
-                                                    <h5 className="text-white mb-0 fw-bold">{studioName}</h5>
+                                                    <h5 className="text-white mb-0 fw-bold">Studio {studioName}</h5>
                                                     <small className="text-white-50">Dolby Atmos 7.1</small>
                                                 </div>
                                             </div>

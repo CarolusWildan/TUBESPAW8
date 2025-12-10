@@ -34,4 +34,9 @@ class Transaksi extends Model
         return $this->belongsTo(Jadwal::class, 'id_jadwal');
     }
 
+    public function film()
+    {
+        return $this->belongsTo(Film::class, 'id_film', 'id_film');
+    }
+
 }

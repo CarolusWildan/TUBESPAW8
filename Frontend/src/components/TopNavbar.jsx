@@ -45,6 +45,9 @@ const TopNavbar = () => {
 
     // Check if user is admin
     const isAdmin = user?.role === "admin";
+    
+    // Check if user is regular user (not admin)
+    const isRegularUser = isAuthenticated && !isAdmin;
 
     // Style umum untuk tombol transparan (Ghost Button)
     const ghostButtonStyle = {
@@ -66,6 +69,18 @@ const TopNavbar = () => {
         borderRadius: "50px",
         padding: "8px 24px",
         boxShadow: "0 4px 15px rgba(37, 117, 252, 0.4)",
+        transition: "all 0.3s ease"
+    };
+
+    // Style untuk tombol laporan (khusus admin)
+    const reportButtonStyle = {
+        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        border: "none",
+        color: "white",
+        fontWeight: "600",
+        borderRadius: "50px",
+        padding: "8px 24px",
+        boxShadow: "0 4px 15px rgba(245, 87, 108, 0.4)",
         transition: "all 0.3s ease"
     };
 
@@ -141,14 +156,25 @@ const TopNavbar = () => {
                     {/* Menu Kanan */}
                     <Nav className="align-items-center gap-3 mt-3 mt-lg-0">
                         
-                        {/* Film Button */}
+                        {/* Film Button (Selalu muncul) */}
                         <Button 
                             style={ghostButtonStyle}
                             className="btn-ghost-hover"
                             onClick={() => navigate("/movies")}
                         >
-                            Film
+                            <i className="bi bi-film me-1"></i> Film
                         </Button>
+
+                        {/* Riwayat Pesanan (Hanya untuk User Biasa, Bukan Admin) */}
+                        {isRegularUser && (
+                            <Button 
+                                style={ghostButtonStyle}
+                                className="btn-ghost-hover"
+                                onClick={() => navigate("/riwayat-pesanan")}
+                            >
+                                <i className="bi bi-clock-history me-1"></i> Riwayat Pesanan
+                            </Button>
+                        )}
 
                         {isAuthenticated ? (
                             <>
@@ -159,7 +185,7 @@ const TopNavbar = () => {
                                         className="btn-gradient-hover"
                                         onClick={() => navigate("/dashboard")}
                                     >
-                                        <i className="bi bi-speedometer2 me-2"></i>Dashboard
+                                        <i className="bi bi-speedometer2 me-1"></i> Dashboard
                                     </Button>
                                 )}
 
@@ -214,7 +240,6 @@ const TopNavbar = () => {
                                                     </span>
                                                 </div>
                                             )}
-                                            {/* HILANGKAN NAMA USER di samping profil */}
                                         </div>
                                     </Dropdown.Toggle>
 
@@ -272,7 +297,21 @@ const TopNavbar = () => {
                                             </div>
                                         </div>
                                         
-                                        {/* Edit Profile */}
+                                        
+                                        
+                                        {/* Menu untuk user biasa */}
+                                        {isRegularUser && (
+                                            <button 
+                                                onClick={() => navigate("/riwayat-pesanan")}
+                                                style={dropdownItemStyle}
+                                                className="dropdown-item-hover"
+                                            >
+                                                <i className="bi bi-clock-history me-2"></i>
+                                                Riwayat Pesanan
+                                            </button>
+                                        )}
+                                        
+                                        {/* Edit Profile (Semua user) */}
                                         <button 
                                             onClick={handleEditProfile}
                                             style={dropdownItemStyle}
@@ -305,7 +344,7 @@ const TopNavbar = () => {
                                     className="btn-ghost-hover"
                                     onClick={() => navigate("/login")}
                                 >
-                                    Login
+                                    <i className="bi bi-box-arrow-in-right me-1"></i> Login
                                 </Button>
 
                                 {/* Register Button (Primary CTA) */}
@@ -314,7 +353,7 @@ const TopNavbar = () => {
                                     className="btn-gradient-hover"
                                     onClick={() => navigate("/register")}
                                 >
-                                    Register
+                                    <i className="bi bi-person-plus me-1"></i> Register
                                 </Button>
                             </>
                         )}
@@ -322,7 +361,7 @@ const TopNavbar = () => {
                 </Navbar.Collapse>
             </Container>
 
-            {/* CSS Global untuk menghilangkan panah dropdown */}
+            {/* CSS Global */}
             <style jsx global>{`
                 /* Hapus panah dropdown dari semua dropdown toggle */
                 .dropdown-toggle::after {
@@ -341,6 +380,11 @@ const TopNavbar = () => {
                     transform: translateY(-2px);
                     box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6) !important;
                     filter: brightness(1.1);
+                }
+                
+                /* Hover effect khusus untuk report button */
+                .btn-gradient-hover:hover {
+                    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6) !important;
                 }
                 
                 /* Hover effect untuk dropdown items */

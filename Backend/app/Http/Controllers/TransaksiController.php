@@ -19,58 +19,90 @@ class TransaksiController extends Controller
     /**
      * Mengambil riwayat transaksi yang hanya dimiliki oleh pengguna yang sedang login.
      */
-    public function index()
-    {
-        $userId = Auth::id();
+public function index()
+{
+    $userId = Auth::id();
 
-        if (!$userId) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+    if (!$userId) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    // Query dengan struktur yang benar
+    $sql = "
+        SELECT 
+            t.id_transaksi,
+            t.jumlah_tiket,
+            t.total_harga,
+            t.metode,
+            t.created_at,
+            t.id_film,
+            t.id_jadwal,
+            f.judul as film_judul,
+            j.tanggal_tayang,
+            j.jam_tayang,
+            s.nomor_studio,
+            s.tipe as studio_tipe,
+            CONCAT('Studio ', s.nomor_studio, ' (', UPPER(s.tipe), ')') as studio_nama,
+            GROUP_CONCAT(DISTINCT k.kode_kursi ORDER BY k.kode_kursi) as kode_kursi_list
+        FROM transaksi t
+        LEFT JOIN film f ON t.id_film = f.id_film
+        LEFT JOIN jadwal j ON t.id_jadwal = j.id_jadwal
+        LEFT JOIN studio s ON j.id_studio = s.id_studio
+        LEFT JOIN tiket tk ON t.id_transaksi = tk.id_transaksi
+        LEFT JOIN kursi k ON tk.id_kursi = k.id_kursi
+        WHERE t.id_user = ?
+        GROUP BY t.id_transaksi, t.jumlah_tiket, t.total_harga, t.metode, 
+                 t.created_at, t.id_film, t.id_jadwal, f.judul, 
+                 j.tanggal_tayang, j.jam_tayang, s.nomor_studio, s.tipe
+        ORDER BY t.created_at DESC
+    ";
+
+    $transactions = DB::select($sql, [$userId]);
+    
+    \Log::info('Transactions with studio data:', $transactions); // Debug log
+        
+    $formattedTransactions = array_map(function($trans) {
+        // Format kode kursi
+        $kodeKursi = $trans->kode_kursi_list ?? '';
+        
+        if (empty($kodeKursi) || $kodeKursi === 'NULL') {
+            $kodeKursi = $trans->jumlah_tiket . ' kursi';
         }
 
-        $transactions = Transaksi::where('id_user', $userId)
-            ->with([
-                'film:id_film,judul', 
-                'jadwal:id_jadwal,jam_tayang,tanggal_tayang',
-                'jadwal.studio:id_studio,nama_studio',
-                'tiket.kursi'
-            ])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-        $formattedTransactions = $transactions->map(function($transaksi) {
-            $nomorKursi = $transaksi->tiket->map(function($tiket) {
-                return $tiket->kursi->nomor_kursi ?? '?';
-            })->implode(', ');
+        // Format studio dengan tipe
+        $studioNama = $trans->studio_nama ?? 'Studio N/A';
+        if ($trans->nomor_studio && $trans->studio_tipe) {
+            $studioNama = "Studio {$trans->nomor_studio} (" . ucfirst($trans->studio_tipe) . ")";
+        }
 
-            // Karena tidak ada status_transaksi, kita anggap semua transaksi sukses
-            $status = 'sukses'; 
-            
-            return [
-                'id_transaksi' => $transaksi->id_transaksi,
-                'tanggal_transaksi' => $transaksi->created_at->format('Y-m-d H:i:s'),
-                'jumlah_tiket' => $transaksi->jumlah_tiket,
-                'total_harga' => $transaksi->total_harga,
-                'metode_pembayaran' => $transaksi->metode,
-                'status_transaksi' => $status,
-                'nomor_kursi' => $nomorKursi,
-                'film' => [
-                    'judul' => $transaksi->film->judul ?? 'N/A'
-                ],
-                'jadwal' => [
-                    'tanggal_tayang' => $transaksi->jadwal->tanggal_tayang ?? null,
-                    'jam_tayang' => $transaksi->jadwal->jam_tayang ?? null,
-                    'studio' => [
-                        'nama_studio' => $transaksi->jadwal->studio->nama_studio ?? 'N/A'
-                    ]
+        return [
+            'id_transaksi' => $trans->id_transaksi,
+            'tanggal_transaksi' => $trans->created_at,
+            'jumlah_tiket' => $trans->jumlah_tiket,
+            'total_harga' => $trans->total_harga,
+            'metode_pembayaran' => $trans->metode,
+            'status_transaksi' => 'sukses',
+            'nomor_kursi' => $kodeKursi,
+            'film' => [
+                'judul' => $trans->film_judul ?? 'N/A'
+            ],
+            'jadwal' => [
+                'tanggal_tayang' => $trans->tanggal_tayang ?? null,
+                'jam_tayang' => $trans->jam_tayang ?? null,
+                'studio' => [
+                    'nomor_studio' => $trans->nomor_studio ?? null,
+                    'tipe' => $trans->studio_tipe ?? null,
+                    'nama_studio' => $studioNama
                 ]
-            ];
-        });
+            ]
+        ];
+    }, $transactions);
 
-        return response()->json([
-            'message' => 'Riwayat transaksi berhasil dimuat',
-            'data' => $formattedTransactions,
-        ], 200);
-    }
+    return response()->json([
+        'message' => 'Riwayat transaksi berhasil dimuat',
+        'data' => $formattedTransactions,
+    ], 200);
+}
 
     public function beliTiket(Request $request)
     {

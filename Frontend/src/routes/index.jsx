@@ -12,7 +12,7 @@ import KelolaJadwalPage from "../pages/KelolaJadwalPage";
 import PesanTiketPage from "../pages/PesanTiketPage";
 import PilihJadwalPage from "../pages/PilihJadwalPage";
 import ReportPage from '../pages/ReportPage';
-import RiwayatPage from "../pages/RiwayatPage";
+import RiwayatPesananPage from '../pages/RiwayatPesananPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -76,8 +76,8 @@ const router = createBrowserRouter([
                 element: <ProtectedRoute><PesanTiketPage /></ProtectedRoute>
             },
             {
-                path: "/history", 
-                element: <ProtectedRoute><RegisterPage /></ProtectedRoute>
+                path: "/riwayat-pesanan", 
+                element: <ProtectedRoute><RiwayatPesananPage /></ProtectedRoute>
             },
             // === ADMIN ===
             { 
