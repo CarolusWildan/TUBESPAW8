@@ -15,7 +15,8 @@ class FilmSeeder extends Seeder
             'durasi_film' => '01:45:00',
             'start_date' => now()->toDateString(),
             'end_date' => now()->addWeeks(2)->toDateString(),
-            'status' => 'Lagi Tayang',
+            'status' => 'showing',
+            'cover_path' => '/covers/petualangan-senja.jpg',
         ]);
 
         Film::query()->create([
@@ -24,7 +25,8 @@ class FilmSeeder extends Seeder
             'durasi_film' => '02:10:00',
             'start_date' => now()->addDays(3)->toDateString(),
             'end_date' => now()->addWeeks(3)->toDateString(),
-            'status' => 'Akan Tayang',
+            'status' => 'coming soon',
+            'cover_path' => '/covers/galaksi-terdekat.jpg',
         ]);
     }
 }

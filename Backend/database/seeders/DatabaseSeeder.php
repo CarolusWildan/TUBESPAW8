@@ -25,6 +25,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'user',
         ]);
 
+        // Add second user for testing
+        User::query()->create([
+            'nama' => 'Second User',
+            'email' => 'second@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+        ]);
+
         // Seed film (2), studio (1), jadwal (3), kursi (5)
         $this->call([
             FilmSeeder::class,
@@ -33,6 +41,7 @@ class DatabaseSeeder extends Seeder
             KursiSeeder::class,
             KursiJadwalSeeder::class,
             KursiJadwalBookedSeeder::class,
+            TransaksiSeeder::class,
         ]);
     }
 }

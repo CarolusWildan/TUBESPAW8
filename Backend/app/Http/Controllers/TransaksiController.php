@@ -457,7 +457,7 @@ class TransaksiController extends Controller
                     'jadwal' => [
                         'tanggal_tayang' => $transaksi->jadwal->tanggal_tayang ?? null,
                         'jam_tayang'     => $transaksi->jadwal->jam_tayang ?? null,
-                        'studio'         => $transaksi->jadwal->studio->nama_studio ?? 'N/A',
+                        'studio'         => $transaksi->jadwal->studio->tipe ?? 'N/A',
                     ],
 
                     'kursi' => [
