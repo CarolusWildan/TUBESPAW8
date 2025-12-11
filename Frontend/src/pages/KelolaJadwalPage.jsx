@@ -313,7 +313,6 @@ const KelolaJadwalPage = () => {
             console.log("🔍 Jadwal to delete object:", jadwalToDelete);
             console.log("🔍 Available keys:", Object.keys(jadwalToDelete));
             
-            // PERBAIKAN: Ambil ID dengan benar
             const jadwalId = jadwalToDelete.id_jadwal || jadwalToDelete.id;
             
             console.log("📤 Mengirim ID untuk delete:", jadwalId);
@@ -323,8 +322,6 @@ const KelolaJadwalPage = () => {
                 throw new Error("ID jadwal tidak ditemukan");
             }
             
-            // PERBAIKAN: Gunakan endpoint DELETE yang benar
-            // Seharusnya: DELETE http://localhost:8000/api/jadwal/delete/{id}
             const response = await axios.delete(`${API_JADWAL_URL}/delete/${jadwalId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,

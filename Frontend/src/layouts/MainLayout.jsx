@@ -18,24 +18,16 @@ const MainLayout = () => {
         <div 
             className="card shadow-sm text-light border-0" 
             style={{ 
-                minHeight: '100vh', // Menggunakan 100vh agar full screen
-                // Gradasi: Ungu Tua -> Biru -> Hitam
+                minHeight: '100vh', 
                 background: "linear-gradient(180deg, #4b0082 0%, #1e3c72 50%, #000000 100%)",
                 backgroundSize: "cover",
-                backgroundAttachment: "fixed" // Agar background tetap diam saat discroll
+                backgroundAttachment: "fixed" 
             }}
         >
             <DynamicPageTitle />
             <TopNavbar routes={routes} />
-            
-            {/* Penting: Karena background sekarang gelap/berwarna, 
-               pastikan komponen di dalam Outlet memiliki kontras yang cukup 
-               atau container semi-transparan.
-            */}
             <Outlet />
             
-            {/* New Footer */}
-            {/* bg-dark dihapus, diganti background transparan agar menyatu dengan gradasi */}
             <footer className="text-light mt-5" style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}>
                 <div className="container py-4">
                     {/* Tomama XXI Title */}
@@ -44,7 +36,7 @@ const MainLayout = () => {
                             TIXIFY
                         </h2>
                         <hr className="my-3 mx-auto" style={{ 
-                            borderColor: "#adb5bd", // Sedikit diperterang agar terlihat di background gelap
+                            borderColor: "#adb5bd", 
                             width: "100%", 
                             maxWidth: "1200px" 
                         }} />

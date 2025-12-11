@@ -113,8 +113,6 @@ const KelolaFilmPage = () => {
         return matchesSearch && matchesGenre && matchesStatus;
     });
 
-    // ============= MODAL HANDLERS =============
-
     // Detail Modal
     const handleViewDetails = (film) => {
         setSelectedFilm(film);
@@ -244,15 +242,12 @@ const KelolaFilmPage = () => {
                         message: err.message
                     });
                     
-                    // Jika error 404, mungkin endpoint salah, lanjut ke percobaan berikutnya
                     if (err.response?.status !== 404) {
-                        // Untuk error selain 404, tampilkan pesan error
                         console.log("⚠️ Error spesifik:", err.response?.data);
                     }
                 }
             }
             
-            // Jika semua percobaan gagal
             if (lastError) {
                 throw lastError;
             }

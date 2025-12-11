@@ -1,7 +1,6 @@
 import React from 'react';
 
 const SeatSelection = ({ capacity = 64, selectedSeats, onSeatSelect, bookedSeats = [], studioSeats = [] }) => {
-    // Jika data kursi belum dimuat dari API, tampilkan loading/kosong
     if (!studioSeats || studioSeats.length === 0) {
         return (
             <div className="d-flex flex-column align-items-center justify-content-center py-5">
@@ -10,11 +9,8 @@ const SeatSelection = ({ capacity = 64, selectedSeats, onSeatSelect, bookedSeats
         );
     }
 
-    // Kelompokkan kursi berdasarkan BARIS (A, B, C...)
-    // Asumsi nomor_kursi format "A1", "A2"
     const rows = {};
     studioSeats.forEach(seat => {
-        // Ambil huruf pertama sebagai Label Baris (misal 'A' dari 'A1')
         const rowLabel = seat.nomor_kursi.replace(/[0-9]/g, ''); 
         if (!rows[rowLabel]) {
             rows[rowLabel] = [];
@@ -51,7 +47,7 @@ const SeatSelection = ({ capacity = 64, selectedSeats, onSeatSelect, bookedSeats
                         <div className="d-flex gap-1">
                             {rows[rowLabel].map((seat) => (
                                 <Seat 
-                                    key={seat.id_kursi} // ID Asli DB
+                                    key={seat.id_kursi}
                                     id={seat.id_kursi}
                                     label={seat.nomor_kursi}
                                     status={isSeatBooked(seat.id_kursi) ? 'sold' : isSeatSelected(seat.id_kursi) ? 'selected' : 'available'}

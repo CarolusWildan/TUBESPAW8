@@ -62,14 +62,12 @@ public function index()
     \Log::info('Transactions with studio data:', $transactions); // Debug log
         
     $formattedTransactions = array_map(function($trans) {
-        // Format kode kursi
         $kodeKursi = $trans->kode_kursi_list ?? '';
         
         if (empty($kodeKursi) || $kodeKursi === 'NULL') {
             $kodeKursi = $trans->jumlah_tiket . ' kursi';
         }
 
-        // Format studio dengan tipe
         $studioNama = $trans->studio_nama ?? 'Studio N/A';
         if ($trans->nomor_studio && $trans->studio_tipe) {
             $studioNama = "Studio {$trans->nomor_studio} (" . ucfirst($trans->studio_tipe) . ")";
@@ -121,7 +119,6 @@ public function index()
         $jadwal = Jadwal::findOrFail($request->id_jadwal);
         $hargaPerTiket = $jadwal->harga;
 
-        // Cek Konflik Kursi
         $sudahDipesan = KursiJadwal::where('id_jadwal', $jadwal->id_jadwal)
             ->whereIn('id_kursi', $kursiIds)
             ->where('status', 'booked')
@@ -135,11 +132,9 @@ public function index()
             ], 422);
         }
 
-        // --- Mulai Transaksi Database ---
         DB::beginTransaction();
 
         try {
-            // 1. Buat Header Transaksi
             $transaksi = Transaksi::create([
                 'id_user' => Auth::id(),
                 'id_film' => $request->id_film,
@@ -147,19 +142,16 @@ public function index()
                 'jumlah_tiket' => count($kursiIds),
                 'total_harga' => count($kursiIds) * $hargaPerTiket,
                 'metode' => $request->metode,
-                // Tidak ada status_transaksi di database
             ]);
 
             $tiketList = [];
             foreach ($kursiIds as $kursiId) {
-                // 2. Buat Tiket (detail transaksi)
                 $tiket = Tiket::create([
                     'id_transaksi' => $transaksi->id_transaksi,
                     'id_kursi' => $kursiId,
                 ]);
                 $tiketList[] = $tiket;
 
-                // 3. Update Status Kursi di Tabel Pivot (KursiJadwal)
                 KursiJadwal::updateOrCreate(
                     [
                         'id_jadwal' => $jadwal->id_jadwal,
@@ -203,11 +195,9 @@ public function index()
                 ], 403);
             }
 
-            // Validasi tahun (opsional, default tahun sekarang)
             $year = $request->get('year', date('Y'));
             
-            // Query untuk mendapatkan total penjualan per bulan
-            // TIDAK ADA FILTER status_transaksi karena kolom tidak ada
+            
             $monthlySales = Transaksi::select(
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('YEAR(created_at) as year'),
@@ -216,13 +206,11 @@ public function index()
                 DB::raw('SUM(jumlah_tiket) as total_tickets')
             )
             ->whereYear('created_at', $year)
-            // Tidak ada where status_transaksi karena kolom tidak ada
             ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
             ->orderBy('year', 'asc')
             ->orderBy('month', 'asc')
             ->get();
 
-            // Format nama bulan
             $months = [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -242,8 +230,7 @@ public function index()
                 ];
             }
 
-            // Data untuk user performance (top 10 users)
-            // Karena tidak ada status_transaksi, kita ambil semua transaksi
+            
             $topUsers = User::select(
                 'users.id_user',
                 'users.nama',
@@ -414,7 +401,6 @@ public function index()
                 )
                 ->first();
 
-            // Transaksi hari ini per jam
             $hourlySales = Transaksi::whereDate('created_at', $today)
                 ->select(
                     DB::raw('HOUR(created_at) as hour'),

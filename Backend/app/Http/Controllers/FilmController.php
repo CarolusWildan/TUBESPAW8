@@ -78,7 +78,6 @@ class FilmController extends Controller
             ], 422);
         }
 
-        // Siapkan data update dasar
         $updateData = [
             'judul' => $request->judul,
             'genre' => $request->genre,
@@ -114,7 +113,6 @@ class FilmController extends Controller
 
     public function delete(string $id)
     {
-        // PERBAIKAN: Cari film berdasarkan id_film
         $film = Film::where('id_film', $id)->first();
 
         if (!$film) {
@@ -132,7 +130,6 @@ class FilmController extends Controller
         ]);
     }
 
-    // PERBAIKAN: Tambahkan method show untuk get film by ID
     public function show(string $id)
     {
         $film = Film::where('id_film', $id)->first();

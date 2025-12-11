@@ -136,9 +136,6 @@ const FormKelolaFilm = ({
         dataToSend.append('cover_path', coverFile);
       }
 
-      // === PERBAIKAN: METHOD SPOOFING UNTUK ROUTE PUT ===
-      // Karena route backend didefinisikan sebagai PUT, dan kita mengirim file (Multipart),
-      // kita harus kirim POST fisik tapi sertakan _method: PUT agar Laravel merouting ke controller yang benar.
       if (mode === 'edit') {
         dataToSend.append('_method', 'PUT');
       }

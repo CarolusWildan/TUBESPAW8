@@ -1,7 +1,6 @@
 import Carousel from "react-bootstrap/Carousel";
 
 const ImageCarousel = ({ images }) => {
-    // Helper jika images kosong atau undefined agar tidak crash
     const safeImages = images && images.length > 0 ? images : [];
 
     return (
@@ -13,10 +12,8 @@ const ImageCarousel = ({ images }) => {
                         <div style={{ 
                             maxHeight: "450px", 
                             height: "100%",
-                            // PERBAIKAN: Gunakan maxWidth + width 100% agar responsif di HP
                             maxWidth: "700px", 
                             width: "100%", 
-                            // PERBAIKAN UTAMA: margin "0 auto" memaksa div ke tengah, mencegah glitch geser kiri
                             margin: "0 auto", 
                             backgroundColor: "transparent", 
                             borderRadius: "16px",
@@ -28,11 +25,10 @@ const ImageCarousel = ({ images }) => {
                                 alt={item.title}
                                 style={{ 
                                     height: "100%", 
-                                    width: "100%", // Ikuti lebar parent (div pembungkus)
+                                    width: "100%", 
                                     display: "block",
                                     objectFit: "cover", 
                                     objectPosition: "center 25%",
-                                    // PERBAIKAN: Hardware acceleration untuk mencegah repaint/zoom glitch saat animasi
                                     transform: "translateZ(0)",
                                     willChange: "transform"
                                 }}

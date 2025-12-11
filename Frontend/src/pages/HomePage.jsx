@@ -3,15 +3,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // IMPORT NAVIGATE
 import axios from "axios";
 import ImageCarousel from "../components/ImageCarousel";
-
-// === PENGGANTI GAMBAR LOKAL (FIX ERROR) ===
 import imgStudio1 from "../assets/images/studio1.png";
-
 import imgStudio2 from "../assets/images/studio2.jpeg";
-
 import imgStudio3 from "../assets/images/studio3.png";
 
-// === STUDIO DATA (Static) ===
 const studiosData = {
     studio1: {
         image: imgStudio1,
@@ -131,7 +126,7 @@ const HomePage = () => {
                     <Col className="text-end">
                         <button 
                             className="btn btn-outline-light btn-sm rounded-pill px-4"
-                            onClick={() => navigate('/movies')} // ARAHKAN KE PAGE FILM
+                            onClick={() => navigate('/movies')} 
                         >
                             Lihat semua →
                         </button>
@@ -140,7 +135,6 @@ const HomePage = () => {
 
                 {nowShowing.length > 0 ? (
                     <div className="d-flex overflow-auto pb-3" style={{ gap: "20px" }}>
-                        {/* LIMITASI: Menggunakan .slice(0, 6) untuk menampilkan max 6 film */}
                         {nowShowing.slice(0, 6).map((film, index) => (
                             <div
                                 key={film.id || index}
@@ -214,7 +208,7 @@ const HomePage = () => {
                     <Col className="text-end">
                         <button 
                             className="btn btn-outline-light btn-sm rounded-pill px-4"
-                            onClick={() => navigate('/movies')} // ARAHKAN KE PAGE FILM
+                            onClick={() => navigate('/movies')} 
                         >
                             Lihat semua →
                         </button>
@@ -223,7 +217,6 @@ const HomePage = () => {
 
                 {comingSoon.length > 0 ? (
                     <div className="d-flex overflow-auto pb-3" style={{ gap: "20px" }}>
-                        {/* LIMITASI: Menggunakan .slice(0, 6) untuk menampilkan max 6 film */}
                         {comingSoon.slice(0, 6).map((film, index) => (
                             <div
                                 key={film.id || index}

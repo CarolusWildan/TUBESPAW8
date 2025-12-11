@@ -17,19 +17,16 @@ class Jadwal extends Model
         'harga',
     ];
 
-    // Relasi: Jadwal milik 1 Film
     public function film()
     {
         return $this->belongsTo(Film::class, 'id_film', 'id_film');
     }
 
-    // Relasi: Jadwal milik 1 Studio
     public function studio()
     {
         return $this->belongsTo(Studio::class, 'id_studio', 'id_studio');
     }
 
-    // Relasi: Jadwal punya banyak Tiket
     public function tiket()
     {
         return $this->hasMany(Tiket::class, 'id_jadwal', 'id_jadwal');

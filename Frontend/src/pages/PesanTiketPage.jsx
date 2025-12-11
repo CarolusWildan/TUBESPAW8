@@ -178,7 +178,6 @@ const PesanTiketPage = () => {
             let usedJadwalId = null; 
 
             try {
-                // Pastikan ID jadwal ada dan diubah ke String jika perlu (untuk konsistensi)
                 const jadwalId = String(schedule.id_jadwal || schedule.id || schedule.schedule_id || schedule.jadwal_id);
 
                 usedJadwalId = jadwalId; 
@@ -208,7 +207,7 @@ const PesanTiketPage = () => {
                 // Set Data Denah Kursi
                 if (data.all_seats && Array.isArray(data.all_seats)) {
                     const normalizedSeats = data.all_seats.map(seat => ({
-                        id_kursi: String(seat.id_kursi), // Kunci kursi harus String untuk konsistensi
+                        id_kursi: String(seat.id_kursi), 
                         nomor_kursi: seat.nomor_kursi || seat.kode_kursi || "??" 
                     }));
                     setStudioSeats(normalizedSeats);
@@ -235,7 +234,7 @@ const PesanTiketPage = () => {
                 if (isFallback) {
                     toast.warning(`Gagal memuat denah kursi. Menampilkan denah simulasi.`);
                     setStudioSeats(generateDummySeats());
-                    setBookedSeats(['3', '5', '12', '15', '16']); // Simulasi beberapa kursi terisi (gunakan string ID)
+                    setBookedSeats(['3', '5', '12', '15', '16']); 
                     setIsUsingDummy(true);
                 } else {
                     let errorMsg = "Gagal memuat denah kursi.";
@@ -244,7 +243,7 @@ const PesanTiketPage = () => {
                     else if (err.request) errorMsg = "Tidak dapat menghubungi server backend.";
                     
                     toast.error(errorMsg);
-                    navigate(-1); // Kembali jika gagal total
+                    navigate(-1); 
                 }
             } finally {
                 setIsLoading(false);
@@ -254,16 +253,15 @@ const PesanTiketPage = () => {
         fetchScheduleDetails();
     }, [movie, schedule, navigate, generateDummySeats]);
 
-    // Update Labels & Price setiap selectedSeats berubah
+    
     useEffect(() => {
         if (schedule) {
-            // Pastikan selectedSeats berisi ID kursi sebagai String (konsisten dengan state lain)
             setTotalPrice(selectedSeats.length * schedule.price);
             
             const labels = selectedSeats.map(id => {
                 const seat = studioSeats.find(s => String(s.id_kursi) === String(id));
                 return seat ? seat.nomor_kursi : id;
-            }).sort((a, b) => a.localeCompare(b)); // Urutkan label kursi secara visual
+            }).sort((a, b) => a.localeCompare(b)); 
             
             setSelectedSeatLabels(labels);
         }
@@ -292,7 +290,6 @@ const PesanTiketPage = () => {
         
         setIsProcessing(true);
 
-        // --- SIMULASI CHECKOUT JIKA DUMMY MODE ---
         if (isUsingDummy) {
             console.log("⚠️ [DEBUG] Melakukan Checkout Simulasi (Tanpa Backend)");
             
@@ -315,14 +312,10 @@ const PesanTiketPage = () => {
 
             const jadwalId = String(schedule.id_jadwal || schedule.id || schedule.schedule_id);
 
-            // Payload yang dikirim ke API
             const payload = {
-                // Konversi semua ID kursi ke INTEGER sebelum dikirim ke Backend
                 id_kursi: selectedSeats.map(id => parseInt(id, 10)), 
                 
-                // Tambahan data lain (ID film mungkin sudah tidak perlu jika API endpoint menggunakan ID Jadwal)
-                // Namun, kita tetap kirim data yang diminta (sesuaikan dengan kebutuhan API Anda)
-                id_film: movie.id, // Pastikan tipe data sama dengan yang diharapkan backend (Int/String)
+                id_film: movie.id, 
                 id_jadwal: parseInt(jadwalId, 10),
                 jumlah_tiket: selectedSeats.length,
                 harga_tiket: schedule.price,

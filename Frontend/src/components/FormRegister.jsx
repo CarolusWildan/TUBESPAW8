@@ -17,9 +17,8 @@ const FormRegister = () => {
 
     const API_REGISTER_URL = 'http://localhost:8000/api/register';
 
-    // Style Input Gelap (Konsisten dengan Login)
     const inputStyle = {
-        background: "rgba(0, 0, 0, 0.2)", // Gelap transparan
+        background: "rgba(0, 0, 0, 0.2)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         color: "white",
         padding: "12px 16px",
@@ -205,7 +204,7 @@ const FormRegister = () => {
                     <Link
                         to="/login"
                         style={{
-                            color: "#60a5fa", // Biru muda terang agar terbaca di dark bg
+                            color: "#60a5fa",
                             textDecoration: "none",
                             fontWeight: "600"
                         }}

@@ -3,26 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
 import { toast } from "sonner"; // Impor toast untuk notifikasi
 
-// --- Komponen Pembantu untuk Kartu Aksi ---
 const ActionCard = ({ icon, title, description, color, navigatePath, navigate }) => {
     // Tentukan warna dan style untuk konsistensi UI dark mode
     let bgColor, borderColor, shadowColor;
     
     switch (color) {
         case 'admin':
-            // Ungu ke Merah (Admin Theme)
             bgColor = 'linear-gradient(145deg, #9333ea 0%, #dc2626 100%)'; 
             borderColor = '#9333ea';
             shadowColor = 'rgba(147, 51, 234, 0.4)';
             break;
         case 'info':
-            // Cyan ke Biru (Pemesanan Theme)
             bgColor = 'linear-gradient(145deg, #06b6d4 0%, #3b82f6 100%)'; 
             borderColor = '#06b6d4';
             shadowColor = 'rgba(6, 182, 212, 0.4)';
             break;
         case 'secondary':
-            // Abu-abu Gelap (Riwayat Theme)
             bgColor = 'linear-gradient(145deg, #374151 0%, #4b5563 100%)'; 
             borderColor = '#4b5563';
             shadowColor = 'rgba(75, 85, 99, 0.3)';
@@ -45,7 +41,6 @@ const ActionCard = ({ icon, title, description, color, navigatePath, navigate })
         <Card 
             className="h-100 border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
             style={{ 
-                // Menggunakan background gelap semi-transparan yang konsisten
                 background: '#1f2937', 
                 borderRadius: '16px', 
                 border: `1px solid ${borderColor}50`, 
@@ -244,7 +239,7 @@ const DashboardPage = () => {
                                 title="Riwayat Transaksi"
                                 description="Cek semua daftar riwayat pemesanan tiket Anda."
                                 color="secondary"
-                                navigatePath="/history" // Navigasi yang sudah diperbaiki
+                                navigatePath="/history" 
                                 navigate={navigate}
                             />
                         </Col>

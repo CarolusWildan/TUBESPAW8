@@ -31,7 +31,7 @@ const FormLogin = () => {
             ...prev,
             [name]: value
         }));
-        setError(null); // Clear error on change
+        setError(null); 
     };
 
     const handleSubmit = async (e) => {
@@ -55,22 +55,20 @@ const FormLogin = () => {
         try {
             const response = await axios.post(API_LOGIN_URL, formData);
             
-            console.log("Full response:", response.data); // Debug log
+            console.log("Full response:", response.data); 
             
-            // PERBAIKAN: Gunakan response.data.user, bukan response.data.detail
             if (response.data.success) {
                 const token = response.data.token;
-                const userData = response.data.user; // PERBAIKAN: user bukan detail
+                const userData = response.data.user; 
                 
-                console.log("User data from API:", userData); // Debug
-                console.log("User role:", userData.role); // Debug
+                console.log("User data from API:", userData); 
+                console.log("User role:", userData.role); 
                 
                 localStorage.setItem('auth_token', token);
                 
-                // Simpan dengan format yang konsisten
                 const userToStore = {
                     id_user: userData.id_user,
-                    id: userData.id_user, // Untuk kompatibilitas
+                    id: userData.id_user, 
                     nama: userData.nama,
                     email: userData.email,
                     role: userData.role
@@ -79,12 +77,10 @@ const FormLogin = () => {
                 localStorage.setItem('user', JSON.stringify(userToStore));
                 localStorage.setItem('login_time', new Date().toISOString());
                 
-                // Set default axios header
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
                 toast.success("Login berhasil! Selamat Datang.");
                 
-                // Debug: cek apa yang tersimpan
                 const storedUser = JSON.parse(localStorage.getItem('user'));
                 console.log("Stored user in localStorage:", storedUser);
                 

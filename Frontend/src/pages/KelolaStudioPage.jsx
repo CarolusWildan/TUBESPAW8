@@ -107,7 +107,7 @@ const KelolaStudioPage = () => {
     const filteredStudios = studios.filter(studio => {
         const studioNumber = studio.nomor_studio?.toString() || "";
         const capacity = studio.kapasitas?.toString() || "";
-        const type = studio.tipe?.toLowerCase() || ""; // TAMBAHAN: Filter by Tipe
+        const type = studio.tipe?.toLowerCase() || ""; 
         
         const searchLower = searchTerm.toLowerCase();
 
@@ -121,7 +121,7 @@ const KelolaStudioPage = () => {
         switch (tipe) {
             case 'imax': return 'primary';
             case 'screenx': return 'info';
-            default: return 'secondary'; // reguler
+            default: return 'secondary'; 
         }
     };
 
@@ -159,7 +159,7 @@ const KelolaStudioPage = () => {
             
             if (!studioId) throw new Error("ID studio tidak ditemukan");
             
-            const endpoint = `${API_STUDIO_URL}/delete/${studioId}`; // Menggunakan endpoint delete spesifik
+            const endpoint = `${API_STUDIO_URL}/delete/${studioId}`; 
             
             await axios.delete(endpoint, {
                 headers: {

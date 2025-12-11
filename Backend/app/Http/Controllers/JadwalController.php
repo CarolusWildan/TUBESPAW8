@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Jadwal;
 use App\Models\Film;
-use App\Models\Kursi; // PASTEKAN INI ADA
+use App\Models\Kursi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -24,11 +24,7 @@ class JadwalController extends Controller
     }
 
     public function create(Request $request)
-    {
-        // ... (Kode create sama seperti sebelumnya) ...
-        // Agar tidak panjang, saya skip bagian create yang sudah berjalan
-        // Fokus ke method SHOW di bawah
-        
+    {   
         $validator = Validator::make($request->all(), [
             'id_film' => 'required|exists:film,id_film',
             'id_studio' => 'required|exists:studio,id_studio',
@@ -61,11 +57,8 @@ class JadwalController extends Controller
         }
     }
 
-    // === BAGIAN INI YANG HARUS DIPERBAIKI ===
     public function show($id)
     {
-        // 1. Load Jadwal + Relasi (Film, Studio)
-        // Load juga 'kursiJadwal' yang statusnya 'booked' untuk tahu kursi mana yang merah
         $jadwal = Jadwal::with(['film', 'studio', 'kursiJadwal' => function($q) {
             $q->where('status', 'booked');
         }])->find($id);
@@ -74,17 +67,11 @@ class JadwalController extends Controller
             return response()->json(['message' => 'Jadwal tidak ditemukan'], 404);
         }
 
-        // 2. Ambil ID kursi yang sudah dibooking (Array of IDs)
         $bookedSeats = $jadwal->kursiJadwal->pluck('id_kursi');
 
-        // 3. Ambil Master Data Kursi (Fisik Kursi)
-        // PERBAIKAN: Gunakan ->get() tanpa parameter spesifik dulu untuk menghindari error "Column not found"
-        // Nanti Frontend akan membaca properti yang tersedia (nomor_kursi atau kode_kursi)
         $allSeats = Kursi::where('id_studio', $jadwal->id_studio)
             ->get(); 
-            // ->get(['id_kursi', 'nomor_kursi']); // Dulu kita spesifik, sekarang kita ambil semua (*) biar aman.
-
-        // Inject data tambahan ke response JSON
+            
         $jadwal->setAttribute('booked_seats', $bookedSeats);
         $jadwal->setAttribute('all_seats', $allSeats);
 
@@ -93,7 +80,6 @@ class JadwalController extends Controller
             'data' => $jadwal
         ], 200);
     }
-    // ==========================================
 
     public function update(Request $request, $id)
     {

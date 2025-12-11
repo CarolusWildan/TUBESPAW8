@@ -187,7 +187,6 @@ class UserController extends Controller
     public function delete($id)
     {
         try {
-            // PERBAIKAN: Gunakan where dengan id_user
             $user = User::where('id_user', $id)->first();
             
             if (!$user) {
@@ -197,9 +196,8 @@ class UserController extends Controller
                 ], 404);
             }
 
-            // Cek jika user mencoba menghapus dirinya sendiri
             $currentUser = Auth::user();
-            if ($currentUser && $currentUser->id_user == $user->id_user) { // PERBAIKAN: id_user
+            if ($currentUser && $currentUser->id_user == $user->id_user) { 
                 return response()->json([
                     'success' => false,
                     'message' => 'You cannot delete your own account'
@@ -222,7 +220,6 @@ class UserController extends Controller
         }
     }
 
-    // TAMBAHKAN: Method untuk reset password atau ubah role
     public function changeRole(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [

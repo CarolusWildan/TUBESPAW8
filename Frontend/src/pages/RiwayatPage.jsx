@@ -12,8 +12,6 @@ const RiwayatPage = () => {
 
     const API_BASE = 'http://localhost:8000/api';
     
-    // Asumsi: Backend memiliki endpoint GET /api/transaksi
-    // Endpoint ini harusnya secara otomatis memfilter berdasarkan user ID dari token
     const API_TRANSAKSI_URL = `${API_BASE}/transaksi`; 
 
     const formatRupiah = (amount) => {

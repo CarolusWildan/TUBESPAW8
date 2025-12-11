@@ -70,9 +70,8 @@ const PilihJadwalPage = () => {
     const handleSelectSchedule = (schedule) => {
         navigate('/book-ticket', {
             state: {
-                movie: movie, // Meneruskan objek movie yang sudah ada (PENTING!)
+                movie: movie, 
                 schedule: {
-                    // ID Jadwal diubah menjadi string di sini untuk konsistensi React/Browser
                     id: String(schedule.id_jadwal), 
                     id_jadwal: String(schedule.id_jadwal),
                     date: schedule.tanggal_tayang,
@@ -124,7 +123,7 @@ const PilihJadwalPage = () => {
                     backgroundPosition: "center",
                     filter: "blur(40px) brightness(0.3)",
                     zIndex: 0,
-                    transform: "scale(1.1)" // Mencegah white edge saat blur
+                    transform: "scale(1.1)" 
                 }}
             />
 

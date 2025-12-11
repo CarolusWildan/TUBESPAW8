@@ -61,7 +61,10 @@ const router = createBrowserRouter([
             { path: "/register", element: <RegisterPage /> },
             { 
                 path: "/dashboard", 
-                element: <ProtectedRoute><DashboardPage /></ProtectedRoute> 
+                element: 
+                <ProtectedRoute>
+                    <DashboardPage />
+                </ProtectedRoute> 
             },
             { 
                 path: "/movies", 
@@ -69,15 +72,24 @@ const router = createBrowserRouter([
             },
             {
                 path: "/select-schedule",
-                element: <ProtectedRoute><PilihJadwalPage /></ProtectedRoute>
+                element: 
+                <ProtectedRoute>
+                    <PilihJadwalPage />
+                </ProtectedRoute>
             },
             {
                 path: "/book-ticket", 
-                element: <ProtectedRoute><PesanTiketPage /></ProtectedRoute>
+                element: 
+                <ProtectedRoute>
+                    <PesanTiketPage />
+                </ProtectedRoute>
             },
             {
                 path: "/riwayat-pesanan", 
-                element: <ProtectedRoute><RiwayatPesananPage /></ProtectedRoute>
+                element: 
+                <ProtectedRoute>
+                    <RiwayatPesananPage />
+                </ProtectedRoute>
             },
             // === ADMIN ===
             { 

@@ -8,9 +8,6 @@ use App\Http\Controllers\TransaksiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// =========================================================
-// 1. PUBLIC ROUTES (No Authentication Required)
-// =========================================================
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
@@ -19,18 +16,12 @@ Route::post('/login', [UserController::class, 'login']);
 Route::get('/films', [FilmController::class, 'index']);
 Route::get('/films/{id}', [FilmController::class, 'show']);
 
-// JADWAL DAPAT DILIHAT OLEH PUBLIK (PENTING UNTUK FRONTEND)
-// Memungkinkan PilihJadwalPage.jsx mengambil data.
+// JADWAL DAPAT DILIHAT OLEH PUBLIK
 Route::get('/jadwal', [JadwalController::class, 'index']);
 
 // Jadwal detail juga harus diakses tanpa auth jika Anda menggunakan route ini 
-// untuk mengambil detail studio/kursi sebelum booking.
 Route::get('/jadwal/{id}', [JadwalController::class, 'show']);
 
-
-// =========================================================
-// 2. PROTECTED ROUTES (Requires 'auth:api' Token)
-// =========================================================
 
 Route::middleware('auth:api')->group(function () {
     
@@ -49,8 +40,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/sales-report', [TransaksiController::class, 'getSalesReport']);
     Route::get('/sales-by-movie', [TransaksiController::class, 'getSalesByMovie']);
     Route::get('/all-transactions', [TransaksiController::class, 'getAllTransactions']);
-    Route::get('/today-sales', [TransaksiController::class, 'getTodaySales']); // Untuk dashboard
-    
+    Route::get('/today-sales', [TransaksiController::class, 'getTodaySales']);
     
     // --- Admin: Film Management ---
     Route::post('/films/create', [FilmController::class, 'create']);
@@ -59,13 +49,12 @@ Route::middleware('auth:api')->group(function () {
 
     // --- Admin: Studio Management ---
     // Studio management tidak perlu endpoint show/index di sini, tapi di rute admin
-    Route::get('/studio', [StudioController::class, 'index']); // Dipertahankan di sini jika Admin mengaksesnya
+    Route::get('/studio', [StudioController::class, 'index']); 
     Route::post('/studio/create', [StudioController::class, 'create']);
     Route::post('/studio/update/{id}', [StudioController::class, 'update']);
     Route::delete('/studio/delete/{id}', [StudioController::class, 'delete']);
     
     // --- Admin: Jadwal Management ---
-    // Route CRUD Jadwal tetap memerlukan otorisasi (hanya admin yang boleh mengubah)
     Route::post('/jadwal/create', [JadwalController::class, 'create']);
     Route::post('/jadwal/update/{id}', [JadwalController::class, 'update']);
     Route::delete('/jadwal/delete/{id}', [JadwalController::class, 'delete']);

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Studio;
-use App\Models\Kursi; // IMPORT PENTING
+use App\Models\Kursi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB; // IMPORT PENTING
+use Illuminate\Support\Facades\DB;
 
 class StudioController extends Controller
 {
@@ -30,7 +30,6 @@ class StudioController extends Controller
             ], 422);
         }
 
-        // Gunakan Transaction agar atomik (semua sukses atau semua gagal)
         try {
             DB::beginTransaction();
 
@@ -43,15 +42,13 @@ class StudioController extends Controller
 
             // 2. Generate Kursi Otomatis
             $kapasitas = $request->kapasitas;
-            $seatsPerRow = 8; // Konfigurasi: 8 kursi per baris
+            $seatsPerRow = 8; 
             $kursiData = [];
             $now = now(); 
 
             for ($i = 1; $i <= $kapasitas; $i++) {
-                // Algoritma Penamaan Kursi (A1..A8, B1..B8)
                 $rowIndex = floor(($i - 1) / $seatsPerRow);
                 
-                // Handle label baris A-Z, lalu AA-AZ
                 $rowLabel = '';
                 $tempIndex = $rowIndex;
                 do {
@@ -63,7 +60,6 @@ class StudioController extends Controller
                 $seatNum = (($i - 1) % $seatsPerRow) + 1;
                 $kodeKursi = $rowLabel . $seatNum;
 
-                // Tampung ke array (Bulk Prepare)
                 $kursiData[] = [
                     'id_studio' => $studio->id_studio,
                     'kode_kursi' => $kodeKursi,
@@ -72,7 +68,6 @@ class StudioController extends Controller
                 ];
             }
 
-            // 3. Simpan Sekaligus (Bulk Insert)
             Kursi::insert($kursiData);
 
             DB::commit();
@@ -111,7 +106,6 @@ class StudioController extends Controller
             ], 422);
         }
 
-        // Update hanya data studio, tidak regenerate kursi untuk keamanan data transaksi lama
         $studio->update([
             'nomor_studio' => $request->nomor_studio,
             'kapasitas' => $request->kapasitas,

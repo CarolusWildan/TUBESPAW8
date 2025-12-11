@@ -21,7 +21,6 @@ const FilmPage = () => {
         return `${STORAGE_URL}${path}`;
     };
 
-    // Fallback Image Handler
     const handleImageError = (e) => {
         e.target.onerror = null;
         e.target.src = "https://placehold.co/300x450/2a2a3d/ffffff?text=No+Image";
@@ -31,7 +30,6 @@ const FilmPage = () => {
         const fetchMovies = async () => {
             try {
                 setLoading(true);
-                // Tambahkan timeout untuk mencegah hang tak terbatas jika server mati
                 const response = await axios.get(API_URL, { timeout: 5000 });
                 const movies = Array.isArray(response.data) ? response.data : (response.data.data || []);
 
@@ -39,7 +37,7 @@ const FilmPage = () => {
                 const coming = movies.filter(m => m.status === 'coming soon');
 
                 setNowPlayingFilms(showing.map(m => ({
-                    id: String(m.id_film), // Konversi ID film ke String untuk konsistensi
+                    id: String(m.id_film), 
                     title: m.judul,
                     image: getImageUrl(m.cover_path),
                     genre: m.genre,
@@ -47,7 +45,7 @@ const FilmPage = () => {
                 })));
 
                 setComingSoonFilms(coming.map(m => ({
-                    id: String(m.id_film), // Konversi ID film ke String untuk konsistensi
+                    id: String(m.id_film), 
                     title: m.judul,
                     image: getImageUrl(m.cover_path),
                     genre: m.genre,

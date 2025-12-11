@@ -108,7 +108,6 @@ const FormKelolaStudio = ({
         
         toast.success("Studio berhasil ditambahkan!");
         
-        // Reset form untuk create mode
         setFormData({
           nomor_studio: "",
           kapasitas: "",

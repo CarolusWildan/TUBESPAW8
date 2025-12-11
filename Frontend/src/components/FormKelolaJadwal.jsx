@@ -13,7 +13,7 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
         id_studio: "",
         tanggal_tayang: "",
         jam_tayang: "",
-        harga: "" // State sudah ada
+        harga: "" 
     });
     
     const [selectedFilmDetails, setSelectedFilmDetails] = useState(null);
@@ -173,7 +173,7 @@ const FormKelolaJadwal = ({ mode, jadwalData, films, studios, onSuccess, onClose
                 id_studio: parseInt(formData.id_studio),
                 tanggal_tayang: formData.tanggal_tayang,
                 jam_tayang: formData.jam_tayang,
-                harga: parseFloat(formData.harga) // Pastikan harga dikirim sebagai angka
+                harga: parseFloat(formData.harga) 
             };
             
             let response;
