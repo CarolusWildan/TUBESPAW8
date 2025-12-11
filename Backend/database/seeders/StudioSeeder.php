@@ -9,10 +9,10 @@ class StudioSeeder extends Seeder
 {
     public function run(): void
     {
+        // Minimal studio required for foreign keys in jadwal & kursi
         Studio::query()->firstOrCreate(
             ['nomor_studio' => 1],
-            ['kapasitas' => 100],
-                ['tipe' => 'reguler']
+            ['kapasitas' => 100]
         );
     }
 }

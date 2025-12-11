@@ -18,8 +18,7 @@ return new class extends Migration
             $table->time('durasi_film');
             $table->date('start_date');
             $table->date('end_date');
-            $table->string('cover_path');
-            $table->enum('status',['coming soon', 'showing']);
+            $table->enum('status',['Akan Tayang', 'Lagi Tayang', 'Selesai Tayang']);
             $table->timestamps();
         });
     }

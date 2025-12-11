@@ -36,5 +36,10 @@ class Tiket extends Model
         return $this->belongsTo(Film::class, 'id_film', 'id_film');
     }
 
+    public function kursi()
+    {
+        return $this->belongsTo(Kursi::class, 'id_kursi', 'id_kursi');
+    }
+
 
 }
