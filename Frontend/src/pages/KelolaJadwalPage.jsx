@@ -142,9 +142,9 @@ const KelolaJadwalPage = () => {
 
     // Filter jadwal
     const filteredJadwal = jadwal.filter(item => {
-        // Helper function untuk cari data
-        const findFilm = films.find(f => f.id_film === item.id_film);
-        const findStudio = studios.find(s => s.id_studio === item.id_studio);
+        // Helper function untuk cari data (handle perbedaan tipe ID: string/number)
+        const findFilm = films.find(f => String(f.id_film) === String(item.id_film));
+        const findStudio = studios.find(s => String(s.id_studio) === String(item.id_studio));
         
         const filmTitle = findFilm?.judul?.toLowerCase() || "";
         const studioNumber = findStudio?.nomor_studio?.toString() || "";
@@ -177,19 +177,19 @@ const KelolaJadwalPage = () => {
 
     // Get film title by id
     const getFilmTitle = (idFilm) => {
-        const film = films.find(f => f.id_film === idFilm);
+        const film = films.find(f => String(f.id_film) === String(idFilm));
         return film?.judul || "Film tidak ditemukan";
     };
 
     // Get studio number by id
     const getStudioNumber = (idStudio) => {
-        const studio = studios.find(s => s.id_studio === idStudio);
+        const studio = studios.find(s => String(s.id_studio) === String(idStudio));
         return studio?.nomor_studio || "Studio tidak ditemukan";
     };
 
-    // Get film duration
+    // Get film duration (durasi_film bisa string "HH:MM:SS" atau menit)
     const getFilmDuration = (idFilm) => {
-        const film = films.find(f => f.id_film === idFilm);
+        const film = films.find(f => String(f.id_film) === String(idFilm));
         return film?.durasi_film || 0;
     };
 
@@ -250,7 +250,7 @@ const KelolaJadwalPage = () => {
 
     // Get film genre
     const getFilmGenre = (idFilm) => {
-        const film = films.find(f => f.id_film === idFilm);
+        const film = films.find(f => String(f.id_film) === String(idFilm));
         return film?.genre || "-";
     };
 
